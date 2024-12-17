@@ -17,20 +17,24 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
   data() {
     return {
-      username: '', // Используем username вместо nickname
+      username: '',
       password: '',
     };
+  },
+  computed: {
+    ...mapGetters(['user']), // Получаем пользователя из Vuex
   },
   methods: {
     ...mapActions(['login']),
     async onSubmit() {
       try {
         await this.login({ username: this.username, password: this.password });
+        console.log(`Добро пожаловать, ${this.username}!`); // Выводим имя пользователя в консоль
         this.$router.push('/home'); // Перенаправляем на главную страницу после успешного входа
       } catch (error) {
         console.error(error);
