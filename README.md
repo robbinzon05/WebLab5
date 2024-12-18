@@ -30,8 +30,8 @@
 
 ```bash
 python -m venv venv # create virtual environment
-venv\Scripts\activate # activate virtual environment
 pip install -r requirements.txt # install python dependencies
+venv\Scripts\activate # activate virtual environment
 
 cd backend
 python manage.py migrate # migrate to the database

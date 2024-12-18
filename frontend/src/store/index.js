@@ -7,7 +7,7 @@ export default createStore({
     refreshToken: localStorage.getItem('refreshToken') || null,
   },
   mutations: {
-    setUser (state, payload) {
+    setUser(state, payload) {
       state.user = payload.user;
       state.accessToken = payload.access;
       state.refreshToken = payload.refresh;
@@ -15,7 +15,7 @@ export default createStore({
       localStorage.setItem('accessToken', payload.access);
       localStorage.setItem('refreshToken', payload.refresh);
     },
-    clearUser (state) {
+    clearUser(state) {
       state.user = null;
       state.accessToken = null;
       state.refreshToken = null;
@@ -25,8 +25,8 @@ export default createStore({
     },
   },
   actions: {
-    async register({ commit }, userData) {
-      const url = 'http://localhost:8080/api/auth/register/'; // Замените на ваш URL
+    async register({ dispatch }, userData) {
+      const url = 'http://localhost:8000/api/auth/register/'; // Замените на ваш URL
       try {
         const response = await fetch(url, {
           method: 'POST',
@@ -36,24 +36,25 @@ export default createStore({
           body: JSON.stringify(userData),
         });
 
+        const result = await response.json();
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.password || 'Ошибка при регистрации');
+          throw new Error(result.detail || 'Ошибка при регистрации');
         }
 
-        const result = await response.json();
-        commit('setUser ', {
-          user: result.user,
-          access: result.access,
-          refresh: result.refresh,
+        // После успешной регистрации автоматически выполняем логин
+        await dispatch('login', {
+          username: userData.username,
+          password: userData.password,
         });
+
+        return result;
       } catch (error) {
         console.error('Ошибка при регистрации:', error);
-        throw error; // Пробрасываем ошибку для обработки в компоненте
+        throw error;
       }
     },
     async login({ commit }, credentials) {
-      const url = 'http://localhost:8080/api/auth/login/'; // Замените на ваш URL
+      const url = 'http://localhost:8000/api/auth/login/'; // Замените на ваш URL
       try {
         const response = await fetch(url, {
           method: 'POST',
@@ -63,27 +64,34 @@ export default createStore({
           body: JSON.stringify(credentials),
         });
 
+        const result = await response.json();
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || 'Ошибка при авторизации');
+          throw new Error(result.detail || 'Ошибка при авторизации');
         }
 
-        const result = await response.json();
-        commit('setUser ', {
+        // Проверяем, что в ответе есть пользовательские данные
+        if (!result.user) {
+          throw new Error('Не удалось получить данные пользователя');
+        }
+
+        // Сохраняем данные о пользователе и токенах
+        commit('setUser', {
           user: result.user,
           access: result.access,
           refresh: result.refresh,
         });
+
+        return result;
       } catch (error) {
         console.error('Ошибка при авторизации:', error);
-        throw error; // Пробрасываем ошибку для обработки в компоненте
+        throw error;
       }
     },
     logout({ commit }) {
-      commit('clearUser ');
+      commit('clearUser');
     },
     async refreshToken({ state, commit }) {
-      const url = 'http://localhost:8080/api/auth/token/refresh/'; // Замените на ваш URL
+      const url = 'http://localhost:8000/api/auth/token/refresh/'; // Замените на ваш URL
       try {
         const response = await fetch(url, {
           method: 'POST',
@@ -93,19 +101,22 @@ export default createStore({
           body: JSON.stringify({ refresh: state.refreshToken }),
         });
 
+        const result = await response.json();
         if (!response.ok) {
-          throw new Error('Ошибка обновления токена');
+          throw new Error(result.detail || 'Ошибка обновления токена');
         }
 
-        const result = await response.json();
-        commit('setUser ', {
-          user: state.user,
+        commit('setUser', {
+          user: state.user, // Предполагается, что user уже известен
           access: result.access,
           refresh: state.refreshToken,
         });
+
+        return result;
       } catch (error) {
         console.error('Ошибка обновления токена:', error);
-        commit('clearUser '); // Очистка пользователя при ошибке
+        commit('clearUser');
+        throw error;
       }
     },
   },
