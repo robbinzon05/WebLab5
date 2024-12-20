@@ -1,8 +1,12 @@
 const { defineConfig } = require('@vue/cli-service')
 
-module.exports = defineConfig({
-  transpileDependencies: true,
+module.exports = {
   devServer: {
-    proxy: 'http://localhost:8000',
-  },
-});
+    host: '0.0.0.0',
+    port: 8080,
+    allowedHosts: 'all',
+    client: {
+      webSocketURL: 'ws://10.8.1.3:8080/ws',
+    },
+  }
+}

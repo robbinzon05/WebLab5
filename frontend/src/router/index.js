@@ -5,6 +5,7 @@ import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Sudoku from '../views/Sudoku.vue';
 import RPS from '../views/RPS.vue'; // Rock Paper Scissors
+import Profile from '../views/Profile.vue';
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -13,6 +14,7 @@ const routes = [
   { path: '/home', name: 'Home', component: Home, meta: { requiresAuth: true } },
   { path: '/sudoku', name: 'Sudoku', component: Sudoku, meta: { requiresAuth: true } },
   { path: '/rps', name: 'RPS', component: RPS, meta: { requiresAuth: true } },
+  { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
