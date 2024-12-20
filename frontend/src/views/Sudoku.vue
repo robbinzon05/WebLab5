@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class = "field">
     <h1>Sudoku</h1>
     <div class="sudoku-grid">
       <div v-for="(row, i) in puzzle" :key="i" class="sudoku-row">
@@ -7,8 +7,9 @@
           v-for="(cell, j) in row"
           :key="j"
           type="text"
-          maxlength="1"
+          maxLength="1"
           v-model="userSolution[i][j]"
+          :readonly="cell"
         />
       </div>
     </div>
@@ -34,6 +35,7 @@ export default {
       this.puzzle = response.data.puzzle;
       this.userSolution = JSON.parse(JSON.stringify(this.puzzle));
     } catch (error) {
+    alert(error)
       console.error('Ошибка при получении пазла:', error);
       this.message = 'Не удалось загрузить пазл.';
     }
@@ -59,19 +61,40 @@ export default {
 </script>
 
 <style>
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+
+}
 .sudoku-grid {
   display: grid;
-  grid-template-rows: repeat(9, auto);
+  width: 270px;
+  height: 270px;
+
 }
 
 .sudoku-row {
-  display: grid;
-  grid-template-columns: repeat(9, auto);
+  display: flex;
 }
 
 .sudoku-row input {
   width: 30px;
   height: 30px;
   text-align: center;
+
+}
+
+
+.sudoku-row input:nth-child(3n){
+    border: 1px solid #000;
+    border-right: 3px solid #000;
+
+}
+
+.sudoku-row:nth-child(3n){
+    border-bottom: 3px solid #000;
 }
 </style>

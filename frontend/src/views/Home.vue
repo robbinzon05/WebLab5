@@ -32,6 +32,10 @@
         <h2>Rock Paper Scissors (2 игрока)</h2>
         <p>Нажмите, чтобы выбрать игру</p>
       </div>
+      <div class="game-card" @click="selectGame('japanese_crossword')">
+        <h2>Japanese Crossword (Solo)</h2>
+        <p>Нажмите, чтобы выбрать игру</p>
+      </div>
     </div>
 
     <p v-if="lobby && lobby.selectedGame">
@@ -60,24 +64,30 @@ export default {
   },
   computed: {
     ...mapGetters(['getUser']),
+
     user() {
       return this.getUser;
     },
+
     isLeader() {
       return this.lobby && this.user && this.lobby.leaderId === this.user.id;
     },
   },
+
   async created() {
     await this.createLobby();
   },
+
   async mounted() {
     // Запускаем пульлинг состояния лобби
     // Пульлинг нужен, чтобы если лидер стартует игру RPS, второй игрок попал в rps
     this.pollInterval = setInterval(() => this.checkLobbyState(), 2000);
   },
+
   beforeUnmount() {
     if (this.pollInterval) clearInterval(this.pollInterval);
   },
+
   methods: {
     ...mapActions(['logout']),
     goToProfile() {
@@ -141,6 +151,7 @@ export default {
 
       if (game === 'sudoku') {
         // Соло игра
+
         if (playerCount > 1) {
           if (!this.isLeader) {
             if (confirm('В лобби >1 игрок. Соло игра. Вы выйдете из этого лобби и создадите новое пустое. Продолжить?')) {
@@ -161,6 +172,30 @@ export default {
           }
         } else {
           this.$router.push('/sudoku');
+        }
+      }else if (game === 'japanese_crossword') {
+        // Соло игра
+
+        if (playerCount > 1) {
+          if (!this.isLeader) {
+            if (confirm('В лобби >1 игрок. Соло игра. Вы выйдете из этого лобби и создадите новое пустое. Продолжить?')) {
+              await this.dissolveLobby();
+              await this.createLobby();
+              this.$router.push('/japaneseCrossword');
+            } else {
+              this.message = 'Вы отменили старт игры.';
+            }
+          } else {
+            if (confirm('Вы лидер и в лобби >1 игрока. При запуске соло игры лобби будет расформировано. Продолжить?')) {
+              await this.dissolveLobby();
+              await this.createLobby();
+              this.$router.push('/japaneseCrossword');
+            } else {
+              this.message = 'Вы отменили старт игры.';
+            }
+          }
+        } else {
+          this.$router.push('/japaneseCrossword');
         }
       } else if (game === 'rps') {
         // RPS - 2 игрока
