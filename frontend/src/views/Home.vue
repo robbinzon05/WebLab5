@@ -36,6 +36,10 @@
         <h2>Japanese Crossword (Solo)</h2>
         <p>Нажмите, чтобы выбрать игру</p>
       </div>
+      <div class="game-card" @click="selectGame('quiz')">
+        <h2>Quiz(Solo)</h2>
+        <p>Нажмите, чтобы выбрать игру</p>
+      </div>
     </div>
 
     <p v-if="lobby && lobby.selectedGame">
@@ -196,6 +200,30 @@ export default {
           }
         } else {
           this.$router.push('/japaneseCrossword');
+        }
+      } else if (game === 'quiz') {
+        // Соло игра
+
+        if (playerCount > 1) {
+          if (!this.isLeader) {
+            if (confirm('В лобби >1 игрок. Соло игра. Вы выйдете из этого лобби и создадите новое пустое. Продолжить?')) {
+              await this.dissolveLobby();
+              await this.createLobby();
+              this.$router.push('/quiz');
+            } else {
+              this.message = 'Вы отменили старт игры.';
+            }
+          } else {
+            if (confirm('Вы лидер и в лобби >1 игрока. При запуске соло игры лобби будет расформировано. Продолжить?')) {
+              await this.dissolveLobby();
+              await this.createLobby();
+              this.$router.push('/quiz');
+            } else {
+              this.message = 'Вы отменили старт игры.';
+            }
+          }
+        } else {
+          this.$router.push('/quiz');
         }
       } else if (game === 'rps') {
         // RPS - 2 игрока

@@ -3,7 +3,8 @@ from .views import (
     create_lobby_view, join_lobby_view, select_game_view, start_view, dissolve_view,
     sudoku_start, sudoku_check,
     japanese_crossword_start, japanese_crossword_check,
-    rps_move_view, rps_state_view, get_rps_result, lobby_state_view, generate_lobby_code # новые эндпоинты
+    quiz_start, quiz_check,
+    rps_move_view, rps_state_view, get_rps_result, lobby_state_view, generate_lobby_code  # новые эндпоинты
 )
 
 urlpatterns = [
@@ -11,6 +12,8 @@ urlpatterns = [
     path('sudoku/check/', sudoku_check, name='sudoku_check'),
     path('japaneseCrossword/start/', japanese_crossword_start, name='japanese_crossword_start'),
     path('japaneseCrossword/check/', japanese_crossword_check, name='japanese_crossword_check'),
+    path('quiz/start/', quiz_start, name='quiz_start'),
+    path('quiz/check/', quiz_check, name='quiz_check'),
 
     path('create', create_lobby_view, name='create_lobby'),
     path('join', join_lobby_view, name='join_lobby'),

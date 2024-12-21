@@ -3,11 +3,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .gamesLogic.sudoku import is_valid_sudoku, get_sudoku
 from .gamesLogic.japaneseCrossword import generate_nonogram, is_valid_japanese_crossword
+from .gamesLogic.quiz import get_random_question, check_answer
 import random
 import string
 
 # Это упрощенная логика. В реальности вы должны хранить лобби в базе данных.
 lobbies = {}  # Словарь вида { code: { code: '...', players: [...], leaderId: ..., selectedGame: None } }
+answer_quiz = 0  # Потом можно закинуть этов бд
 
 
 def generate_lobby_code():
@@ -145,10 +147,28 @@ def japanese_crossword_check(request):
     rows = request.data.get('rowClues', [])
     cols = request.data.get('colClues', [])
     size = request.data.get('size', [])
-    print(solution)
-    correct = is_valid_japanese_crossword(solution, rows, cols,size)
+    correct = is_valid_japanese_crossword(solution, rows, cols, size)
 
     return Response({"correct": correct})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def quiz_start(request):
+    global answer_quiz
+    question = get_random_question()
+    answer_quiz = question["answer"]
+
+    return Response({"question": {"question": question["question"], "options": question["options"]}})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def quiz_check(request):
+    answer = request.data.get('answer', [])
+    correct = check_answer(answer, answer_quiz)
+
+    return Response({"correct": correct, "answer": answer_quiz})
 
 
 @api_view(['POST'])

@@ -35,7 +35,6 @@ export default {
       this.puzzle = response.data.puzzle;
       this.userSolution = JSON.parse(JSON.stringify(this.puzzle));
     } catch (error) {
-    alert(error)
       console.error('Ошибка при получении пазла:', error);
       this.message = 'Не удалось загрузить пазл.';
     }
