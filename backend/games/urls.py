@@ -24,5 +24,5 @@ urlpatterns = [
     # эндпоинты для RPS (двух игроков)
     path('rps/move', rps_move_view, name='rps_move'),
     path('rps/state', rps_state_view, name='rps_state'),
-    path('state', rps_state_view, name='lobby_state'),
+    path('state', lobby_state_view, name='lobby_state'),
 ]

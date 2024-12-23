@@ -238,6 +238,7 @@ export default {
         try {
           await axios.post('http://localhost:8000/api/lobby/start', {
             code: this.lobby.code,
+            game:this.lobby.selectedGame,
           });
           // Сохраняем код лобби, чтобы RPS.vue знал с каким лобби работать
           localStorage.setItem('lobbyCode', this.lobby.code);

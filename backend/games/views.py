@@ -78,11 +78,13 @@ def select_game_view(request):
 def start_view(request):
     user = request.user
     code = request.data.get('code', '')
-
+    game = request.data.get('game')
     if code not in lobbies:
         return Response({'detail': 'Лобби не найдено.'}, status=404)
 
     lobby = lobbies[code]
+    lobby['game'] = game
+    lobby['gameInProgress'] = True
     # Проверяем, лидер ли пользователь
     if lobby['leaderId'] != user.id:
         return Response({'detail': 'Только лидер лобби может начать игру.'}, status=403)
