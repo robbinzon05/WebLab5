@@ -47,9 +47,15 @@ jobs:
         with:
           node-version: '16'
 
-      # Шаг 3: Установка зависимостей и запуск фронтенд-тестов
-      - name: Install frontend dependencies and run tests
+      # Шаг 3: Установка зависимостей и запуск фронтенд-сервера
+      - name: Install frontend dependencies and start server
         run: |
           cd frontend
           npm install
-          npm run test
+          npm run serve &
+          npx wait-on http://localhost:8080
+
+      # Шаг 4: Проверка успешного запуска
+      - name: Verify frontend server startup
+        run: |
+          curl -I http://localhost:8080
