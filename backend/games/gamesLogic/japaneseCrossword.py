@@ -22,9 +22,9 @@ def is_valid_japanese_crossword(grid, rows, cols, size=10):
         flag = False
 
         for j in range(size):
-            if index >= len(rows[i]) and grid[j][i]:
+            if index >= len(rows[i]) and grid[j][i] == 1:
                 return False
-            elif grid[j][i]:
+            elif grid[j][i] == 1:
                 rows[i][index] -= 1
                 flag = True
 
@@ -44,9 +44,9 @@ def is_valid_japanese_crossword(grid, rows, cols, size=10):
         flag = False
 
         for j in range(size):
-            if index >= len(cols[i]) and grid[i][j]:
+            if index >= len(cols[i]) and grid[i][j] == 1:
                 return False
-            elif grid[i][j]:
+            elif grid[i][j] == 1:
                 cols[i][index] -= 1
                 flag = True
 

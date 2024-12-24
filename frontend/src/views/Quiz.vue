@@ -11,7 +11,9 @@
                 {{ option }}
             </div>
         </div>
+        <button @click="back">back</button>
         <p v-if="message">{{ message }}</p>
+
     </div>
 
 
@@ -30,10 +32,18 @@ export default {
         };
     },
     async created() {
-        await this.loadQuestion();
+        await this.load();
     },
     methods: {
-        async loadQuestion() {
+        async back() {
+           try {
+              this.$router.push('/home');
+           } catch (error) {
+             console.error('Ошибка пр ивозврате', error);
+             this.message = 'Ошибка пр ивозврате.';
+           }
+        },
+        async load() {
             try {
                 const response = await axios.get('/api/quiz/start/');
                 this.question = response.data.question;
@@ -65,7 +75,7 @@ export default {
                     }
                 },1000);
                 setTimeout(() => {
-                    this.loadQuestion(); // Вызываем loadQuestion вместо created
+                    this.load(); // Вызываем loadQuestion вместо created
                 }, 2000);
             } catch (error) {
                 console.error('Ошибка при проверке решения:', error);

@@ -8,8 +8,6 @@
             </div>
         </div>
 
-
-
         <div class="grid">
             <div class="clues clues-rows">
                 <div v-for="row in rowClues"  :key="row" class="row-clue">
@@ -26,7 +24,7 @@
                         v-for="(cell, colIndex) in row"
                         :key="colIndex"
                         class="cell"
-                        :class="{ filled: cell }"
+                        :class="{ filled: cell==1, cross: cell == 2 }"
                         @click="toggleCell(rowIndex, colIndex)"
                     ></div>
                 </div>
@@ -34,6 +32,8 @@
         </div>
     </div>
     <button @click="checkSolution">Проверить решение</button>
+    <button @click="load">Restart</button>
+    <button @click="back">back</button>
     <p v-if="message">{{ message }}</p>
   </div>
 </template>
@@ -52,22 +52,34 @@ export default {
     };
   },
   async created() {
-    try {
-      const response = await axios.get('/api/japaneseCrossword/start/');
-      this.rowClues= response.data.rowClues;
-      this.colClues= response.data.colClues;
-      this.size = response.data.size;
-      this.grid = Array.from({ length: this.size }, () => Array(this.size).fill(false));
-
-    } catch (error) {
-      console.error('Ошибка при получении пазла:', error);
-      alert(error)
-      this.message = 'Не удалось загрузить пазл.';
-    }
+        await this.load();
   },
   methods: {
+    async back() {
+       try {
+          this.$router.push('/home');
+       } catch (error) {
+         console.error('Ошибка при возврате', error);
+         this.message = 'Ошибка при возврате.';
+       }
+    },
+    async load() {
+        try {
+            const response = await axios.get('/api/japaneseCrossword/start/');
+            this.rowClues= response.data.rowClues;
+            this.colClues= response.data.colClues;
+            this.size = response.data.size;
+            this.grid = Array.from({ length: this.size }, () => Array(this.size).fill(false));
+            this.message = '';
+
+        } catch (error) {
+          console.error('Ошибка при получении пазла:', error);
+          alert(error)
+          this.message = 'Не удалось загрузить пазл.';
+        }
+    },
     toggleCell(row, col) {
-      this.grid[row][col] = !this.grid[row][col];
+      this.grid[row][col] = (this.grid[row][col]+1)%3;
     },
     async checkSolution() {
       try {
@@ -153,5 +165,8 @@ export default {
 }
 .cell.filled {
   background-color: #000;
+}
+.cell.cross {
+  background-color: gray;
 }
 </style>

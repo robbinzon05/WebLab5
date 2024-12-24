@@ -14,6 +14,8 @@
       </div>
     </div>
     <button @click="checkSolution">Проверить решение</button>
+    <button @click="load">Restart</button>
+    <button @click="back">back</button>
     <p v-if="message">{{ message }}</p>
   </div>
 </template>
@@ -30,16 +32,29 @@ export default {
     };
   },
   async created() {
-    try {
-      const response = await axios.get('/api/sudoku/start/');
-      this.puzzle = response.data.puzzle;
-      this.userSolution = JSON.parse(JSON.stringify(this.puzzle));
-    } catch (error) {
-      console.error('Ошибка при получении пазла:', error);
-      this.message = 'Не удалось загрузить пазл.';
-    }
+        await this.load();
   },
+
   methods: {
+    async back() {
+       try {
+          this.$router.push('/home');
+       } catch (error) {
+         console.error('Ошибка пр ивозврате', error);
+         this.message = 'Ошибка пр ивозврате.';
+       }
+    },
+    async load() {
+       try {
+          const response = await axios.get('/api/sudoku/start/');
+          this.puzzle = response.data.puzzle;
+          this.userSolution = JSON.parse(JSON.stringify(this.puzzle));
+          this.message = '';
+       } catch (error) {
+         console.error('Ошибка при получении пазла:', error);
+         this.message = 'Не удалось загрузить пазл.';
+       }
+    },
     async checkSolution() {
       try {
         const response = await axios.post('/api/sudoku/check/', {

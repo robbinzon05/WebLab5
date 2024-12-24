@@ -253,6 +253,7 @@ def rps_state_view(request):
     # Проверим, в лобби ли пользователь
     if not any(p['id'] == user.id for p in lobby['players']):
         # Пользователя нет в лобби, значит его выкинуло
+
         return Response({'detail': 'Вы больше не в лобби.'}, status=403)
 
     if lobby.get('game') != 'rps':
