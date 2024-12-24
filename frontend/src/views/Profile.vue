@@ -46,6 +46,12 @@
 import axios from '../plugins/axios';
 import { mapGetters } from 'vuex';
 
+import avatar1 from '@/assets/avatars/avatar1.png';
+import avatar2 from '@/assets/avatars/avatar2.png';
+import avatar3 from '@/assets/avatars/avatar3.png';
+import avatar4 from '@/assets/avatars/avatar4.png';
+import avatar5 from '@/assets/avatars/avatar5.png';
+
 export default {
   data() {
     return {
@@ -55,9 +61,11 @@ export default {
       avatarId: '',
       selectedAvatarMessage: '',
       avatars: [
-        { id: 'id_1', name: 'Аватар 1', src: 'https://via.placeholder.com/100' },
-        { id: 'id_2', name: 'Аватар 2', src: 'https://via.placeholder.com/100' },
-        { id: 'id_3', name: 'Аватар 3', src: 'https://via.placeholder.com/100' },
+        { id: 'id_1', name: 'Аватар 1', src: avatar1 },
+        { id: 'id_2', name: 'Аватар 2', src: avatar2 },
+        { id: 'id_3', name: 'Аватар 3', src: avatar3 },
+        { id: 'id_4', name: 'Аватар 4', src: avatar4 },
+        { id: 'id_5', name: 'Аватар 5', src: avatar5 }
       ],
       message: '',
     };
@@ -193,7 +201,9 @@ export default {
 
 .avatar-selection {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+  max-width: 300px;
 }
 .avatar {
   cursor: pointer;
