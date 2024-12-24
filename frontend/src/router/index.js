@@ -14,16 +14,16 @@ import Profile from '../views/Profile.vue'; // Убедитесь, что это
 
 const routes = [
   { path: '/', redirect: '/login' },
-  { path: '/login', name: 'Login', component: Login, meta: { guestOnly: true } },
-  { path: '/register', name: 'Register', component: Register, meta: { guestOnly: true } },
-  { path: '/home', name: 'Home', component: Home, meta: { requiresAuth: true } },
-  { path: '/sudoku', name: 'Sudoku', component: Sudoku, meta: { requiresAuth: true } },
-  { path: '/quiz', name: 'Quiz', component: Quiz, meta: { requiresAuth: true } },
-  { path: '/japaneseCrossword', name: 'JapaneseCrossword', component: JapaneseCrossword, meta: { requiresAuth: true } },
-  { path: '/snake', name: 'Snake', component: Snake, meta: { requiresAuth: true } },
-  { path: '/tetris', name: 'Tetris', component: Tetris, meta: { requiresAuth: true } },
-  { path: '/rps', name: 'RPS', component: RPS, meta: { requiresAuth: true } },
-  { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } }, // Добавьте этот маршрут
+  { path: '/login', name: 'Login', component: Login, meta: { guestOnly: true, title: 'Вход' } },
+  { path: '/register', name: 'Register', component: Register, meta: { guestOnly: true, title: 'Регистрация' } },
+  { path: '/home', name: 'Home', component: Home, meta: { requiresAuth: true, title: 'Главная'} },
+  { path: '/sudoku', name: 'Sudoku', component: Sudoku, meta: { requiresAuth: true, title: 'Sudoku' } },
+  { path: '/quiz', name: 'Quiz', component: Quiz, meta: { requiresAuth: true, title: 'Quiz' } },
+  { path: '/japaneseCrossword', name: 'JapaneseCrossword', component: JapaneseCrossword, meta: { requiresAuth: true, title: 'Crossword' } },
+  { path: '/snake', name: 'Snake', component: Snake, meta: { requiresAuth: true, title: 'Змейка' } },
+  { path: '/tetris', name: 'Tetris', component: Tetris, meta: { requiresAuth: true, title: 'Тетрис' } },
+  { path: '/rps', name: 'RPS', component: RPS, meta: { requiresAuth: true, title: 'RPS' } },
+  { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true, title: 'Профиль' } }, // Добавьте этот маршрут
 
 ];
 
@@ -39,6 +39,14 @@ router.beforeEach((to, from, next) => {
     next('/home');
   } else {
     next();
+  }
+});
+
+router.afterEach((to, from) => {
+  if (to.meta.title) {
+    document.title = to.meta.title;
+  } else {
+    document.title = '???';
   }
 });
 
