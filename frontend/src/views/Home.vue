@@ -43,7 +43,11 @@
     </div>
 
     <p v-if="lobby && lobby.selectedGame">
-      Выбрана игра: {{ lobby.selectedGame === 'sudoku' ? 'Sudoku (соло)' : 'RPS (2 игрока)' }}
+      Выбрана игра:
+      <span v-if="lobby.selectedGame === 'sudoku'">Sudoku (соло)</span>
+      <span v-else-if="lobby.selectedGame === 'rps'">Rock Paper Scissors (2 игрока)</span>
+      <span v-else-if="lobby.selectedGame === 'japanese_crossword'">Japanese Crossword (соло)</span>
+      <span v-else-if="lobby.selectedGame === 'quiz'">Quiz (соло)</span>
     </p>
 
     <button v-if="lobby && lobby.selectedGame" @click="startGame">Старт</button>
