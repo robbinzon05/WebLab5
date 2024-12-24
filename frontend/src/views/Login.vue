@@ -70,6 +70,12 @@ export default {
   gap: 15px;
 }
 
+.login-container p {
+    font-family: "Play", serif;
+    color: #9faebf;
+    user-select: none;
+}
+
 .form-row {
   display: flex;
   flex-direction: row;
