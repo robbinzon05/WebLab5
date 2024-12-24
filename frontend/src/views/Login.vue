@@ -13,6 +13,7 @@
       <button type="submit">Войти</button>
     </form>
     <p v-if="error">{{ error }}</p>
+    <button @click="goToRegister">Регистрация</button> <!-- Новая кнопка переадресации -->
   </div>
 </template>
 
@@ -36,6 +37,9 @@ export default {
       } catch (err) {
         this.error = err.message || 'Произошла ошибка при входе';
       }
+    },
+    goToRegister() {    /* Новый метод переадресации */
+      this.$router.push('/register');
     },
   },
 };
