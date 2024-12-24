@@ -122,6 +122,6 @@ export default createStore({
   },
   getters: {
     isAuthenticated: state => !!state.accessToken,
-    getUser: state => state.user,
+    getUser:  state => state.user
   },
 });

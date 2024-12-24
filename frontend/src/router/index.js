@@ -7,6 +7,8 @@ import Sudoku from '../views/Sudoku.vue';
 import Quiz from '../views/Quiz.vue';
 import JapaneseCrossword from '../views/JapaneseCrossword.vue'
 import RPS from '../views/RPS.vue'; // Rock Paper Scissors
+import Profile from '../views/Profile.vue'; // Убедитесь, что этот импорт правильный
+
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -17,6 +19,8 @@ const routes = [
   { path: '/quiz', name: 'Quiz', component: Quiz, meta: { requiresAuth: true } },
   { path: '/japaneseCrossword', name: 'JapaneseCrossword', component: JapaneseCrossword, meta: { requiresAuth: true } },
   { path: '/rps', name: 'RPS', component: RPS, meta: { requiresAuth: true } },
+  { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } }, // Добавьте этот маршрут
+
 ];
 
 const router = createRouter({
