@@ -1,28 +1,29 @@
 <template>
-  <!-- Заголовок игры -->
-  <div>
+  <div class="rps-game-container">
     <h1>Rock Paper Scissors</h1>
 
-    <!-- Выводим результат предыдущего раунда, если есть -->
-    <p v-if="lastRoundMessage">Результат прошлого раунда: {{ lastRoundMessage }}</p>
+    <!-- Предыдущий раунд (если есть) -->
+    <p v-if="lastRoundMessage" class="rps-last-round">
+      Результат прошлого раунда: {{ lastRoundMessage }}
+    </p>
 
-    <!-- Если можно ходить (canMove === true) -->
-    <div class="rps-container" v-if="canMove">
+    <!-- Кнопки выбора, если canMove === true -->
+    <div class="rps-buttons" v-if="canMove">
       <button @click="play('rock')">Rock</button>
       <button @click="play('paper')">Paper</button>
       <button @click="play('scissors')">Scissors</button>
     </div>
 
-    <!-- Если ход сделан, но ждём оппонента, или иная ситуация -->
-    <p v-else-if="!canMove && !opponentLeft">
+    <!-- Если ход сделан и ждём оппонента -->
+    <p v-else-if="!canMove && !opponentLeft" class="rps-waiting">
       Ожидаем ход соперника...
     </p>
 
-    <!-- Сообщения о ходе, ошибках и т.д. -->
-    <p v-if="message">{{ message }}</p>
+    <!-- Основное сообщение (статусы, ошибки) -->
+    <p v-if="message" class="rps-message">{{ message }}</p>
 
-    <!-- Кнопка выхода из игры (просто уходим в лобби) -->
-    <button @click="exitGame">Выйти</button>
+    <!-- Кнопка выхода -->
+    <button class="exit-button" @click="exitGame">Выйти</button>
   </div>
 </template>
 
@@ -32,45 +33,29 @@ import axios from '../plugins/axios'; // Настроенный экземпля
 export default {
   data() {
     return {
-      message: '',               // Текстовое сообщение (ошибки, статусы)
-      lastRoundMessage: '',      // Текст результата прошлого раунда (например, "Ничья", "Вы выиграли")
-      code: '',                  // Код лобби (берём из localStorage)
-      intervalId: null,          // Идентификатор setInterval (пульлинг)
-      canMove: true,            // Показывает, можем ли мы сейчас сделать ход
-      opponentLeft: false,       // Флаг: оппонент вышел
+      message: '',
+      lastRoundMessage: '',
+      code: '',
+      intervalId: null,
+      canMove: true,
+      opponentLeft: false,
     };
   },
   async mounted() {
     // 1) Считываем код лобби из localStorage
     this.code = localStorage.getItem('lobbyCode') || '';
     if (!this.code) {
-      // Если нет кода лобби => уходим в /home
       this.$router.push('/home');
       return;
     }
 
-    // 2) Запускаем пульлинг состояния каждые 200 мс
+    // 2) Запускаем пульлинг состояния каждые 500 мс
     this.intervalId = setInterval(() => this.checkState(), 500);
   },
-  async exitGame() {
-      try {
-        // 1) Шлём запрос на сервер, чтобы завершить RPS
-        await axios.post('/api/lobby/stop_rps', { code: this.code });
-
-        // 2) Переходим в лобби
-        this.$router.push('/home');
-      } catch (error) {
-        console.error('Ошибка при выходе из игры RPS:', error);
-        // Даже если ошибка, уйдём в home
-        this.$router.push('/home');
-      }
-  },
   beforeUnmount() {
-    // Остановить пульлинг при размонтировании
     if (this.intervalId) clearInterval(this.intervalId);
   },
   methods: {
-    // Делать ход (rock/paper/scissors)
     async play(choice) {
       try {
         await axios.post('/api/lobby/rps/move', {
@@ -79,14 +64,12 @@ export default {
         });
         // После хода временно блокируем кнопки
         this.canMove = false;
-        this.message = 'Коннект есть';
+        this.message = 'Ход сделан. Ожидаем оппонента...';
       } catch (error) {
         console.error('Ошибка при ходе:', error);
-        this.message = '...';
+        this.message = 'Ошибка при ходе.';
       }
     },
-
-    // Пульлинг состояния
     async checkState() {
       try {
         const response = await axios.get('/api/lobby/rps/state', {
@@ -95,7 +78,7 @@ export default {
         const data = response.data;
 
         if (data.status === 'opponent_left') {
-          // Оппонент покинул игру => вернёмся в лобби
+          // Оппонент покинул
           this.opponentLeft = true;
           this.message = 'Оппонент покинул игру. Возвращаемся в лобби...';
           this.canMove = false;
@@ -113,18 +96,15 @@ export default {
           return;
         }
 
-        // Если сервер хранит результат последнего раунда в data.lastRoundMessage
-        // выводим его. Например, "Вы выиграли", "Ничья", "Оппонент выиграл"
+        // Отображаем результат прошлого раунда
         if (data.lastRoundMessage) {
           this.lastRoundMessage = data.lastRoundMessage;
         }
 
-        // canMove => можем ходить в новом раунде
-        // Если сервер говорит, что ходить можно => canMove=true => показываем кнопки
-        // Иначе => "Ожидание оппонента"
+        // Можно ли ходить?
         this.canMove = data.canMove === true;
 
-        // Если сервер вернёт data.message, можем отобразить
+        // Выводим message, если сервер вернул
         if (data.message) {
           this.message = data.message;
         }
@@ -133,19 +113,12 @@ export default {
         this.message = 'Ошибка при проверке состояния.';
       }
     },
-
-    // Кнопка "Выйти" => возвращаемся в /home
-    // Оппонент в пульлинге увидит "opponent_left" (если сервер так настроен)
     async exitGame() {
       try {
-        // 1) Шлём запрос на сервер, чтобы завершить RPS
         await axios.post('/api/lobby/stop_rps', { code: this.code });
-
-        // 2) Переходим в лобби
         this.$router.push('/home');
       } catch (error) {
         console.error('Ошибка при выходе из игры RPS:', error);
-        // Даже если ошибка, уйдём в home
         this.$router.push('/home');
       }
     },
@@ -153,10 +126,82 @@ export default {
 };
 </script>
 
-<style>
-.rps-container {
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Play:wght@400;700&display=swap');
+
+.rps-game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  font-family: "Play", sans-serif;
+}
+
+.rps-game-container h1 {
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: 50px;
+  color: #38f2ba;
+  user-select: none;
+  margin-bottom: 30px;
+}
+
+.rps-last-round {
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #9faebf;
+}
+
+.rps-buttons {
   display: flex;
   gap: 10px;
+  margin-bottom: 20px;
+}
+
+.rps-buttons button {
+  font-family: "Play", sans-serif;
+  font-size: 16px;
+  padding: 8px 12px;
+  background: #38f2ba;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.rps-buttons button:hover {
+  background: #48ffc9;
+  box-shadow: 0 0 10px #48ffc9;
+}
+
+.rps-waiting {
+  font-size: 18px;
+  color: #9faebf;
+  margin-bottom: 20px;
+}
+
+.rps-message {
+  margin-top: 10px;
+  font-size: 18px;
+  color: #ff4444;
+}
+
+.exit-button {
   margin-top: 20px;
+  font-family: "Play", sans-serif;
+  font-size: 16px;
+  padding: 8px 12px;
+  background: #38f2ba;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.exit-button:hover {
+  background: #48ffc9;
+  box-shadow: 0 0 10px #48ffc9;
 }
 </style>
