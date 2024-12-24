@@ -43,9 +43,8 @@
     <button @click="joinLobby">Присоединиться к лобби по коду</button>
 
     <!-- Блок выбора игр -->
-    <div class="games-grid">
-      <!-- Каждая игра — это своя карточка, при клике вызов selectGame(...).
-           В RPS нужно ровно 2 игрока, в остальных случаях — соло. -->
+
+<div class="games-grid">
       <div class="game-card" @click="selectGame('sudoku')">
         <h2>Sudoku (Solo)</h2>
         <p>Нажмите, чтобы выбрать игру</p>
@@ -62,16 +61,26 @@
         <h2>Quiz(Solo)</h2>
         <p>Нажмите, чтобы выбрать игру</p>
       </div>
+      <div class="game-card" @click="selectGame('snake')">
+        <h2>Snake(Solo)</h2>
+        <p>Нажмите, чтобы выбрать игру</p>
+      </div>
+      <div class="game-card" @click="selectGame('tetris')">
+        <h2>Tetris(Solo)</h2>
+        <p>Нажмите, чтобы выбрать игру</p>
+      </div>
     </div>
 
-    <!-- Отображаем выбранную игру, если она есть -->
     <p v-if="lobby && lobby.selectedGame">
       Выбрана игра:
       <span v-if="lobby.selectedGame === 'sudoku'">Sudoku (соло)</span>
       <span v-else-if="lobby.selectedGame === 'rps'">Rock Paper Scissors (2 игрока)</span>
       <span v-else-if="lobby.selectedGame === 'japanese_crossword'">Japanese Crossword (соло)</span>
       <span v-else-if="lobby.selectedGame === 'quiz'">Quiz (соло)</span>
+      <span v-else-if="lobby.selectedGame === 'snake'">Snake(соло)</span>
+      <span v-else-if="lobby.selectedGame === 'tetris'">Tetris(соло)</span>
     </p>
+
 
     <!-- Кнопка "Старт" отображается, если игра выбрана -->
     <button v-if="lobby && lobby.selectedGame" @click="startGame">Старт</button>
