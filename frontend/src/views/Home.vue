@@ -3,7 +3,7 @@
     <nav class="top-bar">
       <div class="user-info">
         <span v-if="user">Привет, {{ user.username }}!</span>
-        <span v-else>Вы не авторизованы</span>
+        <span v-else @click="redirectToLogin">Вы не авторизованы</span>
       </div>
       <button v-if="user" @click="handleLogout">Выйти</button>
       <button v-if="user" @click="goToProfile">Профиль</button>
@@ -89,7 +89,7 @@ export default {
   async mounted() {
     // Запускаем пульлинг состояния лобби
     // Пульлинг нужен, чтобы если лидер стартует игру RPS, второй игрок попал в rps
-    this.pollInterval = setInterval(() => this.checkLobbyState(), 2000);
+    this.pollInterval = setInterval(() => this.checkLobbyState(), 200);
   },
 
   beforeUnmount() {
@@ -107,7 +107,11 @@ export default {
     handleLogout() {
       // Вызываем экшен logout из Vuex
       this.logout();
-      // После этого сразу перенаправляем на страницу логина
+      // После этого к тому же сразу перенаправляем на страницу логина
+      this.$router.push('/login');
+    },
+    redirectToLogin() {
+      // Переходим на страничку входа (если как то неавторизованный пользователь пробился в home).
       this.$router.push('/login');
     },
     async createLobby() {
