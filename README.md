@@ -1,163 +1,95 @@
-# WebLab5
+# 🎮 RPS (Rock, Paper, Scissors) Online Game
+
+RPS (Rock, Paper, Scissors) Online Game — это многопользовательская игра, в которой игроки могут участвовать в быстрых матчах "Камень, Ножницы, Бумага". Проект включает в себя взаимодействия в реальном времени, простой пользовательский интерфейс и надежную логику бэкенда для обеспечения честной игры.
+
+## Функции
+
+### 🎲 Игровая функциональность
+- **Многопользовательская поддержка**: Игроки в одной лобби могут присоединяться к матчу RPS и играть в реальном времени.
+- **Динамическая система лобби**: Игроки могут присоединяться и покидать лобби без нарушения текущих игр.
+- **Обеспечение честной игры**:
+  - Игроки не могут делать несколько ходов в одном раунде.
+  - Если игрок выходит из игры, другой игрок также получает уведомление и перенаправляется на главную страницу.
+
+### 🌐 Фронтенд
+- Построен с использованием Vue.js для адаптивного и удобного интерфейса.
+- Обновления в реальном времени для игровых состояний, включая ходы и результаты раундов.
+- Автоматическое перенаправление, если игрок покидает игру.
+
+### ⚙️ Бэкенд
+- Разработан с использованием Django.
+- Реализует отслеживание состояния игры и надежную обработку ошибок для обеспечения плавного опыта.
+- Предотвращает дублирование ходов в одном раунде с помощью серверной валидации.
+
+## Как это работает
+
+### 🛠️ Рабочий процесс
+1. Игроки входят в лобби.
+2. Игровая сессия начинается, когда два игрока присоединяются к матчу.
+3. Каждый игрок делает свой ход (Камень, Ножницы или Бумага).
+4. Бэкенд определяет победителя и обновляет состояние игры.
+5. Игра сбрасывается для следующего раунда или заканчивается, если игрок покидает игру.
+
+### 🚪 Выход из игры
+- Когда игрок выходит, происходит следующее:
+  - Выходящий игрок вызывает метод `stop_rps_view`.
+  - Оставшийся игрок видит статус=`no_game` и перенаправляется на главную страницу.
+
+### ❌ Предотвращение повторных ходов
+- Бэкенд обеспечивает честную игру, проверяя, сделал ли пользователь уже ход в текущем раунде.
+- Если обнаружен повторный ход, сервер отвечает с ошибкой 400.
+
+## Настройка
+
+### 📋 Предварительные требования
+- Python 3.9+
+- Node.js 14+
+- Django
+- Vue.js
+  
+### 🔧 Установка
+
+#### Бэкенд
+1. Клонируйте репозиторий:
+   ```bash
+   git clone https://github.com/yourusername/rps-game.git
+2. Перейдите в директорию бэкенда:
+   ```bash
+   cd rps-game/backend
+3. Установите зависимости:
+   ```bash
+   pip install -r requirements.txt
+4. Запустите сервер:
+   ```bash
+   python manage.py runserver
+#### Фронтенд
+1. Перейдите в директорию фронтенда:
+   ```bash
+   cd rps-game/frontend
+2. Установите зависимости:
+   ```bash
+   npm install
+3. Запустите сервер разработки:
+   ```bash
+   npm run serve
+
+## 🎉 Использование
+- Доступ к приложению по адресу http://localhost:8000.
+- Присоединяйтесь к лобби и начинайте играть в "Камень, Ножницы, Бумага"!
+- Следуйте инструкциям на экране, чтобы делать ходы, просматривать результаты или выходить из игры.
+## 🚀 Будущие улучшения
+- Добавить поддержку нескольких лобби.
+- Реализовать систему рейтинга для игроков.
+- Расширить выбор игр, включая дополнительные мини-игры.
+## 🤝 Содействие
+- Pull-запросы приветствуются. Для крупных изменений, пожалуйста, сначала откройте проблему, чтобы обсудить, что вы хотели бы изменить.
+## 📜 Лицензия
+- Этот проект лицензирован под MIT License. См. файл LICENSE для подробностей.
+## 🙏 Благодарности
+-Особая благодарность всем участникам и тестировщикам, которые помогли улучшить проект!
+## Технологический стек
+-SPA - Vue 3 + TypeScript + Design System
+-REST - Django REST Framework
+-Docker
+-CI - GitHub Actions / Buildbot / и
 
-RPS (Rock, Paper, Scissors) Online Game is a multiplayer game where players in a lobby can engage in quick matches of "Rock, Paper, Scissors." The project features real-time interactions, a simple user interface, and robust backend logic to ensure fair gameplay.
-
-Features
-
-Game Functionality
-
-Multiplayer Support: Players in the same lobby can join an RPS match and play in real time.
-
-Dynamic Lobby System: Players can join and leave lobbies without disrupting ongoing games.
-
-Fair Play Enforcement:
-
-Players cannot make multiple moves in the same round.
-
-If a player exits mid-game, the other player is also notified and redirected to the home page.
-
-Frontend
-
-Built using Vue.js for a responsive and user-friendly interface.
-
-Real-time updates for game states, including moves and round results.
-
-Automatic redirection if a player leaves the game.
-
-Backend
-
-Developed using Django.
-
-Implements game state tracking and robust error handling to ensure a smooth experience.
-
-Prevents duplicate moves in the same round with server-side validations.
-
-How It Works
-
-Workflow
-
-Players enter a lobby.
-
-A game session starts when two players join a match.
-
-Each player makes their move (Rock, Paper, or Scissors).
-
-The backend determines the winner and updates the game state.
-
-The game resets for the next round or ends if a player leaves.
-
-Exiting the Game
-
-When a player exits, the following occurs:
-
-The exiting player triggers the stop_rps_view method.
-
-The remaining player sees status='no_game' and is redirected to the home page.
-
-Preventing Repeated Moves
-
-Backend ensures fair play by checking if a user has already made a move for the current round.
-
-If a repeated move is detected, the server responds with a 400 error.
-
-Setup
-
-Prerequisites
-
-Python 3.9+
-
-Node.js 14+
-
-Django
-
-Vue.js
-
-Installation
-
-Backend
-
-Clone the repository:
-
-git clone https://github.com/yourusername/rps-game.git
-
-Navigate to the backend directory:
-
-cd rps-game/backend
-
-Install dependencies:
-
-pip install -r requirements.txt
-
-Run the server:
-
-python manage.py runserver
-
-Frontend
-
-Navigate to the frontend directory:
-
-cd rps-game/frontend
-
-Install dependencies:
-
-npm install
-
-Start the development server:
-
-npm run serve
-
-Usage
-
-Access the application at http://localhost:8000.
-
-Join a lobby and start playing "Rock, Paper, Scissors"!
-
-Follow the on-screen instructions to make moves, view results, or exit the game.
-
-Future Enhancements
-
-Add support for multiple lobbies.
-
-Implement a ranking system for players.
-
-Expand the game selection to include additional mini-games.
-
-Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-Acknowledgements
-
-Special thanks to all contributors and playtesters who helped refine the project!
-
-## Technological Stack
-
-- **SPA -** vue3 + typescript + design system
-- **REST -** DRF
-- **Docker**
-- **CI -** github actions/buildbot/etc...
-- **Websockets**
-
-## Backend start
-
-```bash
-python -m venv venv # create virtual environment
-venv\Scripts\activate # activate virtual environment
-pip install -r requirements.txt # install python dependencies
-
-cd backend
-python manage.py migrate # migrate to the database
-python manage.py runserver # start the server
-```
-
-## Frontend start
-
-```bash
-cd frontend
-npm install # install dependencies
-npm run serve # run local dev server
-```
