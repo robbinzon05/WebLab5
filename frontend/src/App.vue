@@ -18,8 +18,8 @@ export default {
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #121212; /* Темный базовый цвет */
-  color: #ffffff;           /* Текст сделаем светлым */
+  background-color: #121212;
+  color: #ffffff;
 }
 
 #app {
@@ -27,6 +27,5 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 20px;
 }
 </style>

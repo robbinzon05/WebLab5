@@ -405,32 +405,24 @@ export default {
 </script>
 
 <style>
-/* Подключение нужных шрифтов (пример из старого кода) */
 @import url('https://fonts.googleapis.com/css2?family=Commissioner:wght@100..900&family=Dela+Gothic+One&family=Oswald:wght@200..700&family=Play:wght@400;700&display=swap');
 
-/* Общий контейнер */
 .lobby-container {
-  /* Вы можете здесь указать любой фон, например чёрный, градиент, etc. */
-  /* background: #000; */
-  /* color: #fff; */
   font-family: "Play", serif;
   padding: 20px;
 }
 
-/* Верхняя панель */
 .top-bar {
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
 }
 
-/* Группа кнопок в шапке */
 .btn-group {
   display: flex;
   gap: 10px;
 }
 
-/* Стили кнопок в top-bar */
 .top-bar button {
   background: transparent;
   color: #9faebf;
@@ -447,32 +439,26 @@ export default {
   text-shadow: 0 0 15px #38f2ba;
 }
 
-/* Стили приветствия */
 .user-info span {
   user-select: none;
   font-size: 35px;
   font-weight: 700;
   font-family: "Dela Gothic One", serif;
-  color: #38f2ba; /* Неоновый голубой */
+  color: #38f2ba;
 }
 
-/* Родительский контейнер для двух колонок */
 .main-content {
   display: flex;
   gap: 20px;
-  /* Можно добавить justify-content: space-between;
-     если хотите, чтобы колонки растягивались */
 }
 
-/* Левая колонка (лобби) */
 .lobby-info-section {
-  flex: 0 0 30%; /* Задаём ~30% ширины для левой колонки */
+  flex: 0 0 30%;
   background-color: rgba(31, 31, 31, 0.5);
   border-radius: 15px;
   padding: 20px;
 }
 
-/* Заголовок "ЛОББИ" */
 .lobby-info-section h1 {
   color: white;
   font-style: italic;
@@ -481,17 +467,16 @@ export default {
   margin-bottom: 20px;
 }
 
-/* Текст в блоке лобби */
 .lobby-info {
   font-size: 23px;
   margin-bottom: 20px;
 }
 .lobby-info p {
   color: #38f2ba;
-  font-family: "Dela Gothic One", serif;
+  font-family: "Play", serif;
+  font-weight: 900;
 }
 
-/* Кнопки в блоке лобби */
 .lobby-info button {
   background: transparent;
   color: #9faebf;
@@ -507,7 +492,6 @@ export default {
   text-shadow: 0 0 10px #38f2ba;
 }
 
-/* Поле ввода + кнопка "Присоединиться" */
 .input-but {
   display: flex;
   gap: 10px;
@@ -518,17 +502,17 @@ export default {
 }
 .input-but input {
   padding: 3px;
-  border: 1px solid #9faebf;
-  border-radius: 8px;
+  border: 1px solid #444;
+  border-radius: 4px;
   color: white;
   font-family: "Play", serif;
-  background: transparent;
+  background: #222;
   font-size: 18px;
-  transition: box-shadow 0.3s;
 }
-.input-but input:focus {
-  outline: none;
-  box-shadow: 0 0 10px #38f2ba;
+
+.input-but input::placeholder {
+    font-size: 15px;
+    text-align: center;
 }
 
 .input-but button {
@@ -547,7 +531,7 @@ export default {
 }
 
 .games-section {
-  flex: 1; /* Остаток ширины */
+  flex: 1;
   display: flex;
   flex-direction: column;
   background-color: rgba(31, 31, 31, 0.5);
