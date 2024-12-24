@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div id="game-container">
+    <div id="game-container-snake">
       <div
         v-for="(cell, index) in grid"
         :key="index"
@@ -8,7 +8,7 @@
           snake: snakeCells.includes(index),
           food: foodCell === index
         }"
-        class="cell">
+        class="cell-snake">
       </div>
     </div>
     <button @click="startGame">Start Game</button>
@@ -36,6 +36,7 @@ export default {
       return this.snake;
     }
   },
+
   methods: {
     async back() {
        try {
@@ -101,23 +102,23 @@ export default {
 </script>
 
 <style>
-#game-container {
+#game-container-snake {
   display: grid;
   grid-template-columns: repeat(20, 20px);
   grid-gap: 2px;
   width: 420px;
   margin: 20px auto;
 }
-.cell {
+.cell-snake {
   width: 20px;
   height: 20px;
   background-color: lightgray;
   border: 1px solid #ccc;
 }
-.cell.snake {
+.cell-snake.snake {
   background-color: green;
 }
-.cell.food {
+.cell-snake.food {
   background-color: red;
 }
 </style>

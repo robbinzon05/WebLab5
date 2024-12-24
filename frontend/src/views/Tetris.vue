@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div id="game-container">
+    <div id="game-container-tetris">
       <div
         v-for="(cell, index) in grid"
         :key="index"
@@ -8,7 +8,7 @@
           active: activeCells.includes(index),
           block: blockCells.includes(index),
         }, shape]"
-        class="cell">
+        class="cell-tetris">
       </div>
     </div>
     <button @click="startGame">Start Game</button>
@@ -16,14 +16,15 @@
     <p>Ваши очки: {{ scope }}</p>
     <p v-if="message">{{ message }}</p>
   </div>
-  <audio ref="audio" hidden controls>
-  <source :src="audioFile" type="audio/mp3">
-  </audio>
+      <audio ref="audio" hidden controls>
+      <source :src="audioFile" type="audio/mp3">
+      </audio>
 </template>
 
 <script >
 import axios from '../plugins/axios';
 import audioFile from '../assets/tetrismusic.mp3'
+
 export default {
   data() {
     return {
@@ -77,6 +78,7 @@ export default {
       this.blockCells = [];
       this.rotation = 0;
       this.message = '';
+
       this.stopGame();
 
       axios.get('/api/tetris/start/');
@@ -150,44 +152,44 @@ export default {
 
 <style>
 
-#game-container {
+#game-container-tetris {
   display: grid;
   grid-template-columns: repeat(10, 30px);
   grid-gap: 2px;
   width: 320px;
   margin: 20px auto;
 }
-.cell {
+.cell-tetris {
   width: 30px;
   height: 30px;
   background-color: lightgray;
   border: 1px solid #ccc;
 }
-.cell.active {
+.cell-tetris.active {
   background-color: blue;
 }
-.cell.block {
+.cell-tetris.block {
   background-color: gray;
 }
-.cell.I.active {
+.cell-tetris.I.active {
   background-color: purple;
 }
-.cell.T.active {
+.cell-tetris.T.active {
   background-color: yellow;
 }
-.cell.S.active {
+.cell-tetris.S.active {
   background-color: red ;
 }
-.cell.Z.active {
+.cell-tetris.Z.active {
   background-color: red;
 }
-.cell.J.active {
+.cell-tetris.J.active {
   background-color: blue;
 }
-.cell.L.active {
+.cell-tetris.L.active {
   background-color: blue;
 }
-.cell.O.active {
+.cell-tetris.O.active {
   background-color: green;
 }
 </style>

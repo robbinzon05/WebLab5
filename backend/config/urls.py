@@ -10,6 +10,8 @@ urlpatterns = [
     # Эндпоинты для Sudoku
     path('api/sudoku/start/', sudoku_start, name='sudoku_start'),
     path('api/sudoku/check/', sudoku_check, name='sudoku_check'),
+    path('api/sudoku/start/', sudoku_start, name='sudoku_start'),
+    path('api/sudoku/check/', sudoku_check, name='sudoku_check'),
     path('api/quiz/start/', quiz_start, name='quiz_start'),
     path('api/quiz/check/', quiz_check, name='quiz_check'),
     path('api/japaneseCrossword/start/', japanese_crossword_start, name='japanese_crossword_start'),

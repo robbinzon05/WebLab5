@@ -22,7 +22,6 @@ urlpatterns = [
     path('tetris/start/', tetris_start, name='tetris_start'),
     path('tetris/action/', tetris_action, name='tetris_action'),
 
-
     path('create', create_lobby_view, name='create_lobby'),
     path('join', join_lobby_view, name='join_lobby'),
     path('selectGame', select_game_view, name='select_game'),
@@ -32,6 +31,5 @@ urlpatterns = [
     # эндпоинты для RPS (двух игроков)
     path('rps/move', rps_move_view, name='rps_move'),
     path('rps/state', rps_state_view, name='rps_state'),
-
     path('state', lobby_state_view, name='lobby_state'),
 ]

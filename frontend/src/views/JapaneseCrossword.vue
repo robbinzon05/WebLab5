@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app-jcross">
    <h1>Japanese Crossword</h1>
     <div class="nonogram">
         <div class="clues clues-cols">
@@ -7,6 +7,8 @@
                 <div v-for="num in col" class="num" :key="num">{{ num }}</div>
             </div>
         </div>
+
+
 
         <div class="grid">
             <div class="clues clues-rows">
@@ -105,7 +107,7 @@ export default {
 </script>
 
 <style>
-#app {
+#app-jcross {
   font-family: Arial, sans-serif;
   text-align: center;
 }

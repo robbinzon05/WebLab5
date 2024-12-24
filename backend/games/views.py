@@ -13,7 +13,6 @@ lobbies = {}  # Словарь вида { code: { code: '...', players: [...], l
 answer_quiz = 0  # Потом можно закинуть этов бд
 scope_tetris = 0
 
-
 def generate_lobby_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
@@ -255,7 +254,6 @@ def rps_state_view(request):
     # Проверим, в лобби ли пользователь
     if not any(p['id'] == user.id for p in lobby['players']):
         # Пользователя нет в лобби, значит его выкинуло
-
         return Response({'detail': 'Вы больше не в лобби.'}, status=403)
 
     if lobby.get('game') != 'rps':
@@ -322,6 +320,8 @@ def lobby_state_view(request):
         'selectedGame': lobby.get('selectedGame'),
         'code': lobby['code'],
     })
+
+
 
 
 def get_next_position(snake, direction):

@@ -1,5 +1,5 @@
 <template>
-    <div id="app">
+    <div id="app-quiz">
 
          <h1>Quiz</h1>
         <div class="quiz">
@@ -13,7 +13,6 @@
         </div>
         <button @click="back">back</button>
         <p v-if="message">{{ message }}</p>
-
     </div>
 
 
@@ -87,7 +86,7 @@ export default {
 
 </script>
 <style>
-#app {
+#app-quiz {
   font-family: Arial, sans-serif;
   text-align: center;
 

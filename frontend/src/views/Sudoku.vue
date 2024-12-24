@@ -1,4 +1,5 @@
 <template>
+
   <div class = "field">
     <h1>Sudoku</h1>
     <div class="sudoku-grid">
@@ -32,7 +33,7 @@ export default {
     };
   },
   async created() {
-        await this.load();
+     await this.load();
   },
 
   methods: {
