@@ -117,7 +117,6 @@ export default {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #000;
   color: #fff;
   font-family: "Play", sans-serif;
 }
@@ -127,7 +126,7 @@ export default {
   font-size: 50px;
   color: #38f2ba;
   user-select: none;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
 
 #game-container-snake {

@@ -1,42 +1,55 @@
 <template>
-  <div id="app-jcross">
-   <h1>Japanese Crossword</h1>
+  <div class="jcross-container" id="app-jcross">
+    <h1>JAPANESE CROSSWORD</h1>
+
     <div class="nonogram">
-        <div class="clues clues-cols">
-            <div v-for="col in colClues"  :key="col" class="col-clue">
-                <div v-for="num in col" class="num" :key="num">{{ num }}</div>
+      <!-- Подсказки для колонок -->
+      <div class="clues clues-cols">
+        <div v-for="(col, colIndex) in colClues" :key="colIndex" class="col-clue">
+          <div v-for="(num, idx) in col" :key="idx" class="num">
+            {{ num }}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Подсказки для строк -->
+        <div class="clues clues-rows">
+          <div v-for="(row, rowIndex) in rowClues" :key="rowIndex" class="row-clue">
+            <div v-for="(num, idx) in row" :key="idx" class="num">
+              {{ num }}
             </div>
+          </div>
         </div>
 
-
-
-        <div class="grid">
-            <div class="clues clues-rows">
-                <div v-for="row in rowClues"  :key="row" class="row-clue">
-                    <div v-for="num in row" class="num" :key="num">{{ num }}</div>
-                </div>
-            </div>
-            <div class="cells">
-                <div
-                    v-for="(row, rowIndex) in grid"
-                    :key="rowIndex"
-                    class="row"
-                >
-                    <div
-                        v-for="(cell, colIndex) in row"
-                        :key="colIndex"
-                        class="cell"
-                        :class="{ filled: cell==1, cross: cell == 2 }"
-                        @click="toggleCell(rowIndex, colIndex)"
-                    ></div>
-                </div>
-            </div>
+        <!-- Сами ячейки кроссворда -->
+        <div class="cells">
+          <div
+            v-for="(row, rowIndex) in grid"
+            :key="rowIndex"
+            class="row"
+          >
+            <div
+              v-for="(cell, colIndex) in row"
+              :key="colIndex"
+              class="cell"
+              :class="{ filled: cell === 1, cross: cell === 2 }"
+              @click="toggleCell(rowIndex, colIndex)"
+            ></div>
+          </div>
         </div>
+      </div>
     </div>
-    <button @click="checkSolution">Проверить решение</button>
-    <button @click="load">Restart</button>
-    <button @click="back">back</button>
-    <p v-if="message">{{ message }}</p>
+
+    <!-- Кнопки -->
+    <div class="button-group">
+      <button @click="checkSolution">Проверить решение</button>
+      <button @click="load">Restart</button>
+      <button @click="back">Back</button>
+    </div>
+
+    <!-- Сообщение -->
+    <p v-if="message" class="jcross-message">{{ message }}</p>
   </div>
 </template>
 
@@ -50,38 +63,39 @@ export default {
       rowClues: [],
       colClues: [],
       size: 0,
-       message: '',
+      message: '',
     };
   },
   async created() {
-        await this.load();
+    await this.load();
   },
   methods: {
     async back() {
-       try {
-          this.$router.push('/home');
-       } catch (error) {
-         console.error('Ошибка при возврате', error);
-         this.message = 'Ошибка при возврате.';
-       }
+      try {
+        this.$router.push('/home');
+      } catch (error) {
+        console.error('Ошибка при возврате', error);
+        this.message = 'Ошибка при возврате.';
+      }
     },
     async load() {
-        try {
-            const response = await axios.get('/api/japaneseCrossword/start/');
-            this.rowClues= response.data.rowClues;
-            this.colClues= response.data.colClues;
-            this.size = response.data.size;
-            this.grid = Array.from({ length: this.size }, () => Array(this.size).fill(false));
-            this.message = '';
-
-        } catch (error) {
-          console.error('Ошибка при получении пазла:', error);
-          alert(error)
-          this.message = 'Не удалось загрузить пазл.';
-        }
+      try {
+        const response = await axios.get('/api/japaneseCrossword/start/');
+        this.rowClues = response.data.rowClues;
+        this.colClues = response.data.colClues;
+        this.size = response.data.size;
+        // Изначально все ячейки false (0) => пусто
+        this.grid = Array.from({ length: this.size }, () => Array(this.size).fill(0));
+        this.message = '';
+      } catch (error) {
+        console.error('Ошибка при получении пазла:', error);
+        this.message = 'Не удалось загрузить пазл.';
+      }
     },
     toggleCell(row, col) {
-      this.grid[row][col] = (this.grid[row][col]+1)%3;
+      // 0 => 1 => 2 => 0 => ...
+      // 0 (пусто), 1 (закрашено), 2 (крест)
+      this.grid[row][col] = (this.grid[row][col] + 1) % 3;
     },
     async checkSolution() {
       try {
@@ -106,69 +120,128 @@ export default {
 };
 </script>
 
-<style>
-#app-jcross {
-  font-family: Arial, sans-serif;
-  text-align: center;
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Play:wght@400;700&display=swap');
+
+.jcross-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  font-family: "Play", sans-serif;
 }
+
+.jcross-container h1 {
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: 50px;
+  color: #38f2ba;
+  user-select: none;
+  margin-bottom: 30px;
+}
+
 .nonogram {
   display: grid;
   justify-content: center;
   align-items: center;
+  gap: 10px;
 }
-.clues-rows {
 
-  display: flex;
-   align-items: center;
-  flex-direction: column;
-}
 .clues-cols {
   display: flex;
   flex-direction: row;
   justify-content: center;
-
+  gap: 5px;
 }
 
 .col-clue {
-
   display: flex;
-  margin: 0,100,0,0;
-   align-items: center;
   flex-direction: column;
-  padding: 2px;
-  width: 40px;
+  align-items: center;
+  background: #111;
+  border: 1px solid #444;
+  padding: 5px;
+  border-radius: 4px;
 }
+
+.grid {
+  display: flex;
+  gap: 5px;
+}
+
+.clues-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .row-clue {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  padding: 2px;
-  height: 40px;
+  background: #111;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 5px;
 }
 
 .num {
-    padding: 4px;
+  padding: 2px 4px;
+  color: #9faebf;
+  font-weight: bold;
+  font-family: "Play", sans-serif;
 }
-.grid {
-  display: flex;
 
-}
 .cells {
-
   display: grid;
   grid-template-rows: repeat(10, 40px);
   grid-template-columns: repeat(10, 40px);
+  gap: 1px;
 }
+
 .cell {
   width: 40px;
   height: 40px;
-  border: 1px solid #000;
-  background-color: #fff;
+  border: 1px solid #444;
+  background-color: #222;
+  transition: background 0.2s;
 }
+
 .cell.filled {
   background-color: #000;
 }
+
 .cell.cross {
-  background-color: gray;
+  background-color: #444;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.button-group button {
+  font-family: "Play", sans-serif;
+  font-size: 16px;
+  padding: 8px 12px;
+  background: #38f2ba;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.button-group button:hover {
+  background: #48ffc9;
+  box-shadow: 0 0 10px #48ffc9;
+}
+
+.jcross-message {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #ff4444;
 }
 </style>
