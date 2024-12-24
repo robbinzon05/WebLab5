@@ -1,0 +1,55 @@
+name: CI/CD for WebLab5
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Шаг 1: Клонирование репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Шаг 2: Установка Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # Шаг 3: Установка зависимостей и запуск серверных тестов
+      - name: Install backend dependencies and run tests
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          cd backend
+          python manage.py migrate
+          python manage.py test
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Шаг 1: Клонирование репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Шаг 2: Установка Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # Шаг 3: Установка зависимостей и запуск фронтенд-тестов
+      - name: Install frontend dependencies and run tests
+        run: |
+          cd frontend
+          npm install
+          npm run test
