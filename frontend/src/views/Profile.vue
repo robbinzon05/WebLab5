@@ -1,86 +1,93 @@
 <template>
-  <div>
+  <div class="profile-edit-container">
     <h1>Редактирование профиля</h1>
+
     <form @submit.prevent="handleUpdate">
-      <div>
+      <div class="form-row">
         <label for="username">Имя пользователя:</label>
         <input type="text" v-model="username" required />
       </div>
-      <div>
+
+      <div class="form-row">
         <label for="email">Email:</label>
         <input type="email" v-model="email" required />
       </div>
-      <div>
+
+      <div class="form-row">
         <label for="password">Пароль:</label>
         <input type="password" v-model="password" required />
       </div>
-      <div>
+
+      <div class="form-row">
         <label>Выберите аватар:</label>
         <div class="avatar-selection">
           <div
             v-for="avatar in avatars"
             :key="avatar.id"
             class="avatar"
-            :class="{ selected: avatar.id === avatarId }" 
+            :class="{ selected: avatar.id === avatarId }"
             @click="selectAvatar(avatar.id)"
           >
             <img :src="avatar.src" :alt="avatar.name" />
           </div>
         </div>
-        <p v-if="selectedAvatarMessage">{{ selectedAvatarMessage }}</p> <!-- Сообщение о выбранном аватаре -->
       </div>
+
+      <p v-if="selectedAvatarMessage">{{ selectedAvatarMessage }}</p>
+
       <button type="submit">Сохранить изменения</button>
     </form>
+
     <p v-if="message">{{ message }}</p>
   </div>
 </template>
 
 <script>
-import axios from '../plugins/axios'; // Используем настроенный экземпляр Axios
+import axios from '../plugins/axios';
 import { mapGetters } from 'vuex';
 
 export default {
   data() {
     return {
-      username: '', // Имя пользователя
-      email: '', // Email
-      password: '', // Пароль
-      avatarId: '', // ID аватара
-      selectedAvatarMessage: '', // Сообщение о выбранном аватаре
+      username: '',
+      email: '',
+      password: '',
+      avatarId: '',
+      selectedAvatarMessage: '',
       avatars: [
-        { id: 'id_1', name: 'Аватар 1', src: 'https://via.placeholder.com/100' }, // Заглушка 1
-        { id: 'id_2', name: 'Аватар 2', src: 'https://via.placeholder.com/100' }, // Заглушка 2
-        { id: 'id_3', name: 'Аватар 3', src: 'https://via.placeholder.com/100' }, // Заглушка 3
+        { id: 'id_1', name: 'Аватар 1', src: 'https://via.placeholder.com/100' },
+        { id: 'id_2', name: 'Аватар 2', src: 'https://via.placeholder.com/100' },
+        { id: 'id_3', name: 'Аватар 3', src: 'https://via.placeholder.com/100' },
       ],
       message: '',
     };
   },
   computed: {
-    ...mapGetters(['getUser ']), // Получаем данные пользователя из Vuex
+    ...mapGetters(['getUser']),
   },
   created() {
     if (this.$store.getters.isAuthenticated) {
-      this.loadUserData(); // Загружаем данные пользователя
+      this.loadUserData();
     } else {
-      this.$router.push('/login'); // Перенаправляем на страницу входа, если пользователь не аутентифицирован
+      this.$router.push('/login');
     }
   },
   methods: {
     loadUserData() {
-      const user = this.getUser ; // Получаем данные текущего пользователя
+      const user = this.getUser;
       if (user) {
-        this.username = user.username; // Устанавливаем имя пользователя
-        this.email = user.email; // Устанавливаем email
-        this.avatarId = user.avatar_id || ''; // Устанавливаем ID аватара
+        this.username = user.username;
+        this.email = user.email;
+        this.avatarId = user.avatar_id || '';
       } else {
         console.error('Пользователь не найден.');
         this.message = 'Не удалось загрузить данные пользователя.';
       }
     },
     selectAvatar(id) {
-      this.avatarId = id; // Устанавливаем выбранный аватар
-      const selectedAvatar = this.avatars.find(avatar => avatar.id === id);
-      this.selectedAvatarMessage = `Вы выбрали: ${selectedAvatar.name}`; // Обновляем сообщение о выбранном аватаре
+      this.avatarId = id;
+      const selectedAvatar = this.avatars.find((avatar) => avatar.id === id);
+      this.selectedAvatarMessage = `Вы выбрали: ${selectedAvatar.name}`;
     },
     async handleUpdate() {
       try {
@@ -88,10 +95,10 @@ export default {
           username: this.username,
           email: this.email,
           password: this.password,
-          avatar_id: this.avatarId, // ID аватара
+          avatar_id: this.avatarId,
         });
 
-        // Сохраняем обновленные данные в localStorage
+        // Сохраняем обновленные данные в localStorage (пример)
         localStorage.setItem('username', this.username);
         localStorage.setItem('email', this.email);
         localStorage.setItem('avatarId', this.avatarId);
@@ -107,28 +114,119 @@ export default {
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Commissioner:wght@100..900&family=Dela+Gothic+One&family=Oswald:wght@200..700&family=Play:wght@400;700&display=swap');
+
+.profile-edit-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.profile-edit-container h1 {
+  user-select: none;
+  font-family: "Dela Gothic One", serif;
+  color: #38f2ba;
+  font-size: 50px;
+  margin-bottom: 30px;
+}
+
+.profile-edit-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.profile-edit-container p {
+    font-family: "Play", serif;
+    color: #9faebf;
+    user-select: none;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.form-row label {
+  user-select: none;
+  font-family: "Play", serif;
+  color: #9faebf;
+  flex: 0 0 150px;
+}
+
+.form-row input {
+  flex: 1;
+  max-width: 300px;
+  padding: 5px;
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-family: "Play", serif;
+}
+
+.profile-edit-container button {
+  user-select: none;
+  font-family: "Play", serif;
+  font-size: 17px;
+  background: #38f2ba;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s;
+}
+.profile-edit-container button:hover {
+  background: #48ffc9;
+}
+
+.profile-edit-container p {
+  margin-top: 10px;
+}
+
 .avatar-selection {
-  display: flex;  gap: 10px; /* Расстояние между аватарами */
+  display: flex;
+  gap: 10px;
 }
-
 .avatar {
-  cursor: pointer; /* Указатель при наведении */
-  border: 2px solid transparent; /* Начальный стиль границы */
-  transition: border-color 0.3s; /* Плавный переход для границы */
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
 }
-
 .avatar:hover {
-  border-color: #007bff; /* Цвет границы при наведении */
+  border-color: #007bff;
 }
-
 .avatar.selected {
-  border-color: #28a745; /* Цвет границы для выбранного аватара */
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); /* Эффект тени для выделения */
+  border-color: #28a745;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+.avatar img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
 }
 
-.avatar img {
-  width: 100px; /* Ширина аватара */
-  height: 100px; /* Высота аватара */
-  border-radius: 50%; /* Круглая форма аватара */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .form-row label {
+    flex: none;
+    margin-bottom: 5px;
+  }
+  .form-row input {
+    max-width: 100%;
+  }
+  .profile-edit-container h1 {
+    font-size: 35px;
+  }
 }
 </style>

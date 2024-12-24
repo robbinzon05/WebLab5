@@ -66,16 +66,13 @@ export default {
 </script>
 
 <style>
+
 .register-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* Если хотите занять всю высоту экрана и выровнять по центру: */
   min-height: 100vh;
-
-  /* Или уберите min-height, если хотите минимизировать
-     прокрутку при небольшом количестве контента */
 }
 
 .register-container h1 {
@@ -125,7 +122,6 @@ export default {
   font-family: "Play", serif;
 }
 
-/* Кнопки */
 .register-container button {
   user-select: none;
   font-family: "Play", serif;
@@ -139,31 +135,30 @@ export default {
   margin-top: 10px;
   transition: background 0.3s;
 }
+
 .register-container button:hover {
   background: #48ffc9;
 }
 
-/* Сообщения об ошибке */
 .register-container p[v-if="error"] {
   color: red;
   margin-top: 10px;
 }
 
-/* Адаптивная верстка: если ширина экрана меньше 600px */
 @media (max-width: 600px) {
   .form-row {
     flex-direction: column;
-    align-items: flex-start; /* лейбл и инпут выровнены слева */
+    align-items: flex-start;
   }
   .form-row label {
-    flex: none; /* убираем фиксированную ширину */
+    flex: none;
     margin-bottom: 5px;
   }
   .form-row input {
     max-width: 100%;
   }
   .register-container h1 {
-    font-size: 35px; /* чуть меньше заголовок на маленьких экранах */
+    font-size: 35px;
   }
 }
 </style>
