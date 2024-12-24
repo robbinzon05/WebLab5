@@ -4,10 +4,7 @@ from .views import (
     sudoku_start, sudoku_check,
     japanese_crossword_start, japanese_crossword_check,
     quiz_start, quiz_check,
-    snake_state,
-    tetris_state,tetris_action,tetris_start,
-    rps_move_view, rps_state_view, get_rps_result,
-    lobby_state_view, generate_lobby_code  # новые эндпоинты
+    rps_move_view, rps_state_view, stop_rps_view, get_rps_result, lobby_state_view, generate_lobby_code  # новые эндпоинты
 )
 
 urlpatterns = [
@@ -17,10 +14,6 @@ urlpatterns = [
     path('japaneseCrossword/check/', japanese_crossword_check, name='japanese_crossword_check'),
     path('quiz/start/', quiz_start, name='quiz_start'),
     path('quiz/check/', quiz_check, name='quiz_check'),
-    path('snake/state/', snake_state, name='snake_state'),
-    path('tetris/state/', tetris_state, name='tetris_state'),
-    path('tetris/start/', tetris_start, name='tetris_start'),
-    path('tetris/action/', tetris_action, name='tetris_action'),
 
     path('create', create_lobby_view, name='create_lobby'),
     path('join', join_lobby_view, name='join_lobby'),
@@ -32,4 +25,5 @@ urlpatterns = [
     path('rps/move', rps_move_view, name='rps_move'),
     path('rps/state', rps_state_view, name='rps_state'),
     path('state', lobby_state_view, name='lobby_state'),
+    path('stop_rps', stop_rps_view, name='stop_rps'),
 ]

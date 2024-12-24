@@ -3,105 +3,130 @@
   <div>
     <h1>Rock Paper Scissors</h1>
 
-    <!-- Если игра продолжается (inProgress) и не закончена (finished) -->
-    <div class="rps-container" v-if="!finished && inProgress">
-      <!-- Три кнопки для выбора: rock, paper, scissors -->
+    <!-- Выводим результат предыдущего раунда, если есть -->
+    <p v-if="lastRoundMessage">Результат прошлого раунда: {{ lastRoundMessage }}</p>
+
+    <!-- Если можно ходить (canMove === true) -->
+    <div class="rps-container" v-if="canMove">
       <button @click="play('rock')">Rock</button>
       <button @click="play('paper')">Paper</button>
       <button @click="play('scissors')">Scissors</button>
     </div>
 
-    <!-- Сообщения о ходе, результате, ошибках и т.д. -->
+    <!-- Если ход сделан, но ждём оппонента, или иная ситуация -->
+    <p v-else-if="!canMove && !opponentLeft">
+      Ожидаем ход соперника...
+    </p>
+
+    <!-- Сообщения о ходе, ошибках и т.д. -->
     <p v-if="message">{{ message }}</p>
 
-    <!-- Кнопка возвращения в лобби (видна только когда finished=true) -->
-    <button v-if="finished" @click="goBackToLobby">Вернуться в лобби</button>
+    <!-- Кнопка выхода из игры (просто уходим в лобби) -->
+    <button @click="exitGame">Выйти</button>
   </div>
 </template>
 
 <script>
-import axios from '../plugins/axios'; // Используем настроенный экземпляр Axios
+import axios from '../plugins/axios'; // Настроенный экземпляр Axios с токеном
 
 export default {
   data() {
     return {
-      message: '',     // Поле для вывода сообщений (ожидание, результат и т.д.)
-      code: '',        // Код лобби (читаем из localStorage при входе)
-      intervalId: null,// Идентификатор setInterval для пульлинга состояния
-      inProgress: true,// Флаг: игра идёт (пока не закончена)
-      finished: false, // Флаг: игра закончена (показать результат)
+      message: '',               // Текстовое сообщение (ошибки, статусы)
+      lastRoundMessage: '',      // Текст результата прошлого раунда (например, "Ничья", "Вы выиграли")
+      code: '',                  // Код лобби (берём из localStorage)
+      intervalId: null,          // Идентификатор setInterval (пульлинг)
+      canMove: true,            // Показывает, можем ли мы сейчас сделать ход
+      opponentLeft: false,       // Флаг: оппонент вышел
     };
   },
   async mounted() {
-    // При монтировании компонента:
-    // 1) Считываем из localStorage код лобби, который туда записали в Home.vue при старте
+    // 1) Считываем код лобби из localStorage
     this.code = localStorage.getItem('lobbyCode') || '';
     if (!this.code) {
-      // Если нет кода, значит мы не знаем, в каком лобби, => идём на /home
+      // Если нет кода лобби => уходим в /home
       this.$router.push('/home');
       return;
     }
 
-    // 2) Запускаем пульлинг (checkState) каждые 2 секунды, чтобы отслеживать статус игры
-    this.intervalId = setInterval(() => this.checkState(), 2000);
+    // 2) Запускаем пульлинг состояния каждые 200 мс
+    this.intervalId = setInterval(() => this.checkState(), 500);
+  },
+  async exitGame() {
+      try {
+        // 1) Шлём запрос на сервер, чтобы завершить RPS
+        await axios.post('/api/lobby/stop_rps', { code: this.code });
+
+        // 2) Переходим в лобби
+        this.$router.push('/home');
+      } catch (error) {
+        console.error('Ошибка при выходе из игры RPS:', error);
+        // Даже если ошибка, уйдём в home
+        this.$router.push('/home');
+      }
   },
   beforeUnmount() {
-    // При размонтировании компонента останавливаем пульлинг
+    // Остановить пульлинг при размонтировании
     if (this.intervalId) clearInterval(this.intervalId);
   },
   methods: {
-    // Обработка выбора (rock, paper или scissors)
+    // Делать ход (rock/paper/scissors)
     async play(choice) {
       try {
-        // Отправляем ход на сервер: '/api/lobby/rps/move'
-        // Параметры: code (код лобби), move (выбор)
         await axios.post('/api/lobby/rps/move', {
           code: this.code,
           move: choice,
         });
-        this.message = 'Ваш ход сделан, ожидаем другого игрока...';
+        // После хода временно блокируем кнопки
+        this.canMove = false;
+        this.message = 'Коннект есть';
       } catch (error) {
         console.error('Ошибка при ходе:', error);
-        this.message = 'Ошибка при ходе.';
+        this.message = '...';
       }
     },
 
-    // Пульлинг: спрашиваем состояние игры у сервера
+    // Пульлинг состояния
     async checkState() {
       try {
         const response = await axios.get('/api/lobby/rps/state', {
-          // Передаём code как query-параметр
           params: { code: this.code },
         });
         const data = response.data;
 
-        // Интерпретируем статус
+        if (data.status === 'opponent_left') {
+          // Оппонент покинул игру => вернёмся в лобби
+          this.opponentLeft = true;
+          this.message = 'Оппонент покинул игру. Возвращаемся в лобби...';
+          this.canMove = false;
+          clearInterval(this.intervalId);
+          this.$router.push('/home');
+          return;
+        }
+
         if (data.status === 'no_game') {
-          // Игра не активна => возвращаемся в лобби
-          this.message = 'Игра прервана, возвращаемся в лобби...';
-          this.inProgress = false;
+          // Игра прервана (лобби расформировали)
+          this.message = 'Игра прервана. Возвращаемся в лобби...';
+          this.canMove = false;
           clearInterval(this.intervalId);
-          setTimeout(() => {
-            this.$router.push('/home');
-          }, 2000);
-        } else if (data.status === 'opponent_left') {
-          // Оппонент покинул игру => выкидываем пользователя обратно в лобби
-          this.message = 'Оппонент покинул игру, возвращаемся в лобби...';
-          this.inProgress = false;
-          clearInterval(this.intervalId);
-          setTimeout(() => {
-            this.$router.push('/home');
-          }, 2000);
-        } else if (data.status === 'in_progress') {
-          // Игра идёт, ждём ходов
-          this.inProgress = true;
-          // moves_done (data.moves_done) можно вывести пользователю
-        } else if (data.status === 'finished') {
-          // Игра завершилась => показываем результат
-          this.inProgress = false;
-          this.finished = true;
-          this.message = data.message; // data.message содержит например "Ничья!" или "Победитель: ... "
-          clearInterval(this.intervalId);
+          this.$router.push('/home');
+          return;
+        }
+
+        // Если сервер хранит результат последнего раунда в data.lastRoundMessage
+        // выводим его. Например, "Вы выиграли", "Ничья", "Оппонент выиграл"
+        if (data.lastRoundMessage) {
+          this.lastRoundMessage = data.lastRoundMessage;
+        }
+
+        // canMove => можем ходить в новом раунде
+        // Если сервер говорит, что ходить можно => canMove=true => показываем кнопки
+        // Иначе => "Ожидание оппонента"
+        this.canMove = data.canMove === true;
+
+        // Если сервер вернёт data.message, можем отобразить
+        if (data.message) {
+          this.message = data.message;
         }
       } catch (error) {
         console.error('Ошибка при проверке состояния игры:', error);
@@ -109,9 +134,20 @@ export default {
       }
     },
 
-    // Кнопка возвращения в лобби после окончания игры
-    goBackToLobby() {
-      this.$router.push('/home');
+    // Кнопка "Выйти" => возвращаемся в /home
+    // Оппонент в пульлинге увидит "opponent_left" (если сервер так настроен)
+    async exitGame() {
+      try {
+        // 1) Шлём запрос на сервер, чтобы завершить RPS
+        await axios.post('/api/lobby/stop_rps', { code: this.code });
+
+        // 2) Переходим в лобби
+        this.$router.push('/home');
+      } catch (error) {
+        console.error('Ошибка при выходе из игры RPS:', error);
+        // Даже если ошибка, уйдём в home
+        this.$router.push('/home');
+      }
     },
   },
 };
