@@ -4,12 +4,14 @@ from rest_framework.response import Response
 from .gamesLogic.sudoku import is_valid_sudoku, get_sudoku
 from .gamesLogic.japaneseCrossword import generate_nonogram, is_valid_japanese_crossword
 from .gamesLogic.quiz import get_random_question, check_answer
+from .gamesLogic.tetris import is_valid_position, spawn_piece, move_piece, rotate_piece, WIDTH
 import random
 import string
 
 # Это упрощенная логика. В реальности вы должны хранить лобби в базе данных.
 lobbies = {}  # Словарь вида { code: { code: '...', players: [...], leaderId: ..., selectedGame: None } }
 answer_quiz = 0  # Потом можно закинуть этов бд
+scope_tetris = 0
 
 
 def generate_lobby_code():
@@ -320,3 +322,151 @@ def lobby_state_view(request):
         'selectedGame': lobby.get('selectedGame'),
         'code': lobby['code'],
     })
+
+
+def get_next_position(snake, direction):
+    head_x, head_y = snake[0]
+    if direction == "up":
+        return (head_x, head_y - 1)
+    elif direction == "down":
+        return (head_x, head_y + 1)
+    elif direction == "left":
+        return (head_x - 1, head_y)
+    elif direction == "right":
+        return (head_x + 1, head_y)
+
+
+@api_view(['Post'])
+@permission_classes([IsAuthenticated])
+def snake_state(request):
+    data = request.data
+    snake = [(pos % 20, pos // 20) for pos in data.get('snake', [])]
+    direction = data.get('direction')
+    food = (data.get('food') % 20, data.get('food') // 20)
+    new_head = (0, 0)
+    # Get new head position
+    if len(snake) != 0:
+        new_head = get_next_position(snake, direction)
+
+    # Check collisions
+    if new_head in snake or not (0 <= new_head[0] < 20 and 0 <= new_head[1] < 20) or len(snake) == 0:
+        return Response({"snake": [], "food": data['food'], "message": "Game over"})  # Game over
+
+    # Move snake
+    new_snake = [new_head] + snake[:-1]
+
+    # Check if food eaten
+    if new_head == food:
+        new_snake.append(snake[-1])
+        food = (random.randint(0, 19), random.randint(0, 19))
+
+    # Convert positions back to grid indices
+    snake_indices = [pos[1] * 20 + pos[0] for pos in new_snake]
+    food_index = food[1] * 20 + food[0]
+
+    return Response({"snake": snake_indices, "food": food_index})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def tetris_start(request):
+    global scope_tetris
+    scope_tetris = 0
+
+    return Response({"scope": scope_tetris})
+
+
+@api_view(['Post'])
+@permission_classes([IsAuthenticated])
+def tetris_state(request):
+    global scope_tetris
+    data = request.data
+    message = ''
+    incorrect = False
+
+    active_piece = {
+        "shape": data.get('shape'),
+        "cells": [(pos % WIDTH, pos // WIDTH) for pos in data.get('cells', [])],
+        "rotation": data.get('rotation', 0)
+    }
+    block_cells = [(pos % WIDTH, pos // WIDTH) for pos in data.get('blockCells', [])]
+
+    # Move active piece down
+    new_active_cells = move_piece(active_piece['cells'], "down")
+
+    # Check collision with blocks or bottom
+    if not is_valid_position(new_active_cells, block_cells) or len(active_piece['cells']) == 0:
+        block_cells.extend(active_piece['cells'])
+        new_active_piece = spawn_piece()
+        scope_tetris += 1
+    else:
+
+        active_piece['cells'] = new_active_cells
+        new_active_piece = active_piece
+
+    # Check completed lines
+    rows = {y for _, y in block_cells}
+    completed_rows = {y for y in rows if sum(1 for x, y2 in block_cells if y2 == y) == WIDTH}
+    block_cells = [(x, y) for x, y in block_cells if y not in completed_rows]
+
+    scope_tetris += 100 * len(completed_rows)
+    new_block_cells = []
+    for x, y in block_cells:
+        new_y = y
+        for y2 in completed_rows:
+            if y <= y2:
+                new_y += 1
+        new_block_cells.append((x, new_y))
+
+    if sum(1 for x, y in new_block_cells if y == 0) > 0:
+        message = "Game over"
+        incorrect = True
+    # Convert back to grid indices
+    active_indices = [y * WIDTH + x for x, y in new_active_piece['cells']]
+    block_indices = [y * WIDTH + x for x, y in new_block_cells]
+
+    return Response({"shape": new_active_piece['shape'], "cells": active_indices,
+                     "rotation": new_active_piece['rotation'], "blockCells": block_indices, 'message': message,
+                     'incorrect': incorrect, "scope": scope_tetris})
+
+
+@api_view(['Post'])
+@permission_classes([IsAuthenticated])
+def tetris_action(request):
+    data = request.data
+    action = data.get("action")
+    message = ''
+    incorrect = False
+
+    active_piece = {
+        "shape": data.get('shape'),
+        "cells": [(pos % WIDTH, pos // WIDTH) for pos in data.get('cells', [])],
+        "rotation": data.get('rotation', 0)
+    }
+    block_cells = [(pos % WIDTH, pos // WIDTH) for pos in data.get('blockCells', [])]
+
+    if action == "left":
+        new_cells = move_piece(active_piece['cells'], "left")
+        if is_valid_position(new_cells, block_cells):
+            active_piece['cells'] = new_cells
+    elif action == "right":
+        new_cells = move_piece(active_piece['cells'], "right")
+        if is_valid_position(new_cells, block_cells):
+            active_piece['cells'] = new_cells
+    elif action == "down":
+        new_cells = move_piece(active_piece['cells'], "down")
+        if is_valid_position(new_cells, block_cells):
+            active_piece['cells'] = new_cells
+    elif action == "rotate":
+        rotated_piece = rotate_piece(active_piece)
+        if is_valid_position(rotated_piece['cells'], block_cells):
+            active_piece = rotated_piece
+
+    if sum(1 for x, y in block_cells if y == 0) > 0:
+        message = "Game over"
+        incorrect = True
+
+    # Convert back to grid indices
+    active_indices = [y * WIDTH + x for x, y in active_piece['cells']]
+    return Response({"shape": active_piece['shape'], "cells": active_indices,
+                     "rotation": active_piece['rotation'], 'message': message, 'incorrect': incorrect})

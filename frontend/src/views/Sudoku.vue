@@ -40,8 +40,8 @@ export default {
        try {
           this.$router.push('/home');
        } catch (error) {
-         console.error('Ошибка пр ивозврате', error);
-         this.message = 'Ошибка пр ивозврате.';
+         console.error('Ошибка при возврате', error);
+         this.message = 'Ошибка при возврате.';
        }
     },
     async load() {
