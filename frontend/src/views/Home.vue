@@ -5,7 +5,7 @@
         <span v-if="user">Привет, {{ user.username }}!</span>
         <span v-else>Вы не авторизованы</span>
       </div>
-      <button v-if="user" @click="logout">Выйти</button>
+      <button v-if="user" @click="handleLogout">Выйти</button>
       <button v-if="user" @click="goToProfile">Профиль</button>
     </nav>
 
@@ -103,6 +103,12 @@ export default {
     },
     toggleShowCode() {
       this.showCode = !this.showCode;
+    },
+    handleLogout() {
+      // Вызываем экшен logout из Vuex
+      this.logout();
+      // После этого сразу перенаправляем на страницу логина
+      this.$router.push('/login');
     },
     async createLobby() {
       try {
