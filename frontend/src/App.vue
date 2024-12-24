@@ -15,12 +15,18 @@ export default {
 </script>
 
 <style>
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #121212; /* Темный базовый цвет */
+  color: #ffffff;           /* Текст сделаем светлым */
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 20px;
 }
 </style>
