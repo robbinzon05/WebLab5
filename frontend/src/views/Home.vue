@@ -238,7 +238,7 @@ export default {
         try {
           await axios.post('http://localhost:8000/api/lobby/start', {
             code: this.lobby.code,
-            game:this.lobby.selectedGame,
+            game: this.lobby.selectedGame,
           });
           // Сохраняем код лобби, чтобы RPS.vue знал с каким лобби работать
           localStorage.setItem('lobbyCode', this.lobby.code);
@@ -272,6 +272,7 @@ export default {
         });
         const data = response.data;
 
+
         // Если мы не в лобби, вернёмся в home
         // Но мы уже на home, значит обновим lobby
         // Здесь можно обновить lobby, если хотите
@@ -279,6 +280,7 @@ export default {
         if (data.game === 'rps' && data.gameInProgress) {
           // Если не лидер, или даже лидер, если хотите чтобы оба шли в RPS,
           // Если вы хотите только второго игрока, то можно проверить !this.isLeader
+
           localStorage.setItem('lobbyCode', this.lobby.code);
           this.$router.push('/rps');
         }
