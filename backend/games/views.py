@@ -324,7 +324,7 @@ def lobby_state_view(request):
     })
 
 
-def get_next_position_snake(snake, direction):
+def get_next_position(snake, direction):
     head_x, head_y = snake[0]
     if direction == "up":
         return (head_x, head_y - 1)
@@ -346,7 +346,7 @@ def snake_state(request):
     new_head = (0, 0)
     # Get new head position
     if len(snake) != 0:
-        new_head = get_next_position_snake(snake, direction)
+        new_head = get_next_position(snake, direction)
 
     # Check collisions
     if new_head in snake or not (0 <= new_head[0] < 20 and 0 <= new_head[1] < 20) or len(snake) == 0:

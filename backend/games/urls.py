@@ -5,7 +5,7 @@ from .views import (
     japanese_crossword_start, japanese_crossword_check,
     quiz_start, quiz_check,
     snake_state,
-    tetris_state, tetris_action, tetris_start,
+    tetris_state,tetris_action,tetris_start,
     rps_move_view, rps_state_view, get_rps_result,
     lobby_state_view, generate_lobby_code  # новые эндпоинты
 )
@@ -21,6 +21,7 @@ urlpatterns = [
     path('tetris/state/', tetris_state, name='tetris_state'),
     path('tetris/start/', tetris_start, name='tetris_start'),
     path('tetris/action/', tetris_action, name='tetris_action'),
+
 
     path('create', create_lobby_view, name='create_lobby'),
     path('join', join_lobby_view, name='join_lobby'),

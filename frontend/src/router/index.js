@@ -5,9 +5,9 @@ import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Sudoku from '../views/Sudoku.vue';
 import Quiz from '../views/Quiz.vue';
-import JapaneseCrossword from '../views/JapaneseCrossword.vue';
-import Snake from '../views/Snake.vue';
-import Tetris from '../views/Tetris.vue';
+import JapaneseCrossword from '../views/JapaneseCrossword.vue'
+import Snake from '../views/Snake.vue'
+import Tetris from '../views/Tetris.vue'
 import RPS from '../views/RPS.vue'; // Rock Paper Scissors
 import Profile from '../views/Profile.vue'; // Убедитесь, что этот импорт правильный
 

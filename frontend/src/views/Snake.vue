@@ -41,8 +41,8 @@ export default {
        try {
           this.$router.push('/home');
        } catch (error) {
-         console.error('Ошибка при возврате', error);
-         this.message = 'Ошибка при возврате.';
+         console.error('Ошибка пр ивозврате', error);
+         this.message = 'Ошибка пр ивозврате.';
        }
     },
     async fetchNextState() {
@@ -69,8 +69,7 @@ export default {
       this.snake = [145, 146,147];
       this.direction = 'left';
       this.message = '';
-      clearInterval(this.intervalId);
-      window.removeEventListener("keydown", this.handleKeyDown);
+      this.stopGame();
 
       this.foodCell = Math.floor(Math.random() * this.grid.length);
       this.intervalId = setInterval(async () => {
