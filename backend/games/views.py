@@ -4,14 +4,13 @@ from rest_framework.response import Response
 from .gamesLogic.sudoku import is_valid_sudoku, get_sudoku
 from .gamesLogic.japaneseCrossword import generate_nonogram, is_valid_japanese_crossword
 from .gamesLogic.quiz import get_random_question, check_answer
-from .gamesLogic.tetris import is_valid_position, spawn_piece, move_piece, rotate_piece, WIDTH
 import random
 import string
 
 # Это упрощенная логика. В реальности вы должны хранить лобби в базе данных.
 lobbies = {}  # Словарь вида { code: { code: '...', players: [...], leaderId: ..., selectedGame: None } }
 answer_quiz = 0  # Потом можно закинуть этов бд
-scope_tetris = 0
+
 
 def generate_lobby_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
@@ -186,48 +185,52 @@ def rps_move_view(request):
 
     lobby = lobbies[code]
 
-    if lobby.get('game') != 'rps' or not lobby.get('gameInProgress'):
-        return Response({'detail': 'Игра RPS не запущена.'}, status=400)
-    # Проверяем, что пользователь в лобби
-    player = None
+    # Проверяем, действительно ли выбрана игра RPS
+    if lobby.get('game') != 'rps':
+        return Response({'detail': 'Игра RPS не выбрана или не запущена.'}, status=400)
 
-    for p in lobby['players']:
-        if p['id'] == user.id:
-            player = p
-            break
-    if not player:
+    # Проверяем, что пользователь в лобби
+    player_in_lobby = any(p['id'] == user.id for p in lobby['players'])
+    if not player_in_lobby:
         return Response({'detail': 'Вы не в этом лобби.'}, status=403)
 
     if move not in ['rock', 'paper', 'scissors']:
         return Response({'detail': 'Некорректный ход.'}, status=400)
 
+    # Создаём словарь для ходов, если не существует
     if 'rpsMoves' not in lobby:
         lobby['rpsMoves'] = {}
 
+    if user.id in lobby['rpsMoves']:
+        # Этот игрок уже сделал ход в текущем раунде
+        return Response({'detail': 'Вы уже сделали ход в этом раунде.'}, status=400)
+
+    # Сохраняем ход текущего пользователя
     lobby['rpsMoves'][user.id] = move
 
-    # Если оба сделали ход
+    # Если оба сделали ход => определяем результат
     if len(lobby['rpsMoves']) == 2:
-        # Определяем победителя
         moves = list(lobby['rpsMoves'].items())  # [(playerId, move), (playerId, move)]
         p1_id, p1_move = moves[0]
         p2_id, p2_move = moves[1]
 
         result = get_rps_result(p1_move, p2_move)
 
-        # Результат: 'draw', 'p1', 'p2'
+        # Сохраняем результат последнего раунда (rpsLastRound),
+        # а НЕ завершаем игру. Так игра станет "бесконечной"
         if result == 'draw':
-            lobby['rpsResult'] = 'draw'
+            lobby['rpsLastRound'] = 'Ничья!'
         elif result == 'p1':
-            lobby['rpsResult'] = p1_id
+            p1_name = next((p['username'] for p in lobby['players'] if p['id'] == p1_id), '???')
+            lobby['rpsLastRound'] = f'Победитель: {p1_name}'
         else:
-            lobby['rpsResult'] = p2_id
+            p2_name = next((p['username'] for p in lobby['players'] if p['id'] == p2_id), '???')
+            lobby['rpsLastRound'] = f'Победитель: {p2_name}'
 
-        # Завершаем игру
-        lobby['gameInProgress'] = False
+        # Очищаем rpsMoves => переходим к новому раунду
+        lobby['rpsMoves'] = {}
 
-    return Response({'detail': 'Ход принят', 'rpsMoves': lobby['rpsMoves']})
-
+    return Response({'detail': 'Ход принят'})
 
 def get_rps_result(m1, m2):
     if m1 == m2:
@@ -239,66 +242,36 @@ def get_rps_result(m1, m2):
     else:
         return 'p2'
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def rps_state_view(request):
-    # Этот эндпоинт будем дергать с фронта, чтобы узнать состояние игры
     user = request.user
     code = request.query_params.get('code', '')
 
     if code not in lobbies:
-        return Response({'detail': 'Лобби не найдено.'}, status=404)
+        return Response({'status': 'no_game'}, status=404)
+
     lobby = lobbies[code]
-
-    # Проверим, в лобби ли пользователь
-    if not any(p['id'] == user.id for p in lobby['players']):
-        # Пользователя нет в лобби, значит его выкинуло
-        return Response({'detail': 'Вы больше не в лобби.'}, status=403)
-
-    if lobby.get('game') != 'rps':
-        # Игра не rps, значит возможно вернуться в лобби
-        return Response({'status': 'no_game'})
-
-    if not lobby.get('gameInProgress'):
-        # Игра завершилась, есть rpsResult
-        if 'rpsResult' in lobby:
-            res = lobby['rpsResult']
-            if res == 'draw':
-                result_msg = 'Ничья!'
-            else:
-                winner_id = res
-                # Определим имя победителя
-                winner_name = None
-                for p in lobby['players']:
-                    if p['id'] == winner_id:
-                        winner_name = p['username']
-                if winner_name:
-                    result_msg = f'Победитель: {winner_name}'
-                else:
-                    result_msg = 'Ошибка при определении победителя'
-            # Игра окончена, можно всех вернуть в лобби
-            # Расформируем игру (или оставим лобби без игры)
-            lobby['game'] = None
-            lobby['rpsMoves'] = {}
-            lobby['rpsResult'] = None
-            return Response({'status': 'finished', 'message': result_msg})
-        else:
-            # Игра прервалась или кто-то вышел
-            return Response({'status': 'no_game'})
-
-    # Игра идёт
-    # Проверим, сколько игроков в лобби
-    if len(lobby['players']) < 2:
-        # Один вышел, вернуть другого в лобби
-        lobby['game'] = None
-        lobby['rpsMoves'] = {}
+    player_in_lobby = any(p['id'] == user.id for p in lobby['players'])
+    if not player_in_lobby:
         return Response({'status': 'opponent_left'})
 
-    # Игра в процессе, оба игрока на месте
-    moves_done = len(lobby.get('rpsMoves', {}))
-    return Response({'status': 'in_progress', 'moves_done': moves_done})
+    if lobby.get('game') != 'rps':
+        return Response({'status': 'no_game'})
 
+    if len(lobby['players']) < 2:
+        return Response({'status': 'opponent_left'})
+
+    moves_done = len(lobby.get('rpsMoves', {}))
+    can_move = (moves_done < 2)  # если 0 или 1 ход сделан, значит можно ходить
+
+    data = {
+        'status': 'in_progress',
+        'canMove': can_move,
+        'lastRoundMessage': lobby.get('rpsLastRound', ''),
+        'message': None
+    }
+    return Response(data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -322,151 +295,29 @@ def lobby_state_view(request):
     })
 
 
-
-
-def get_next_position(snake, direction):
-    head_x, head_y = snake[0]
-    if direction == "up":
-        return (head_x, head_y - 1)
-    elif direction == "down":
-        return (head_x, head_y + 1)
-    elif direction == "left":
-        return (head_x - 1, head_y)
-    elif direction == "right":
-        return (head_x + 1, head_y)
-
-
-@api_view(['Post'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def snake_state(request):
-    data = request.data
-    snake = [(pos % 20, pos // 20) for pos in data.get('snake', [])]
-    direction = data.get('direction')
-    food = (data.get('food') % 20, data.get('food') // 20)
-    new_head = (0, 0)
-    # Get new head position
-    if len(snake) != 0:
-        new_head = get_next_position(snake, direction)
+def stop_rps_view(request):
+    """
+    Игрок (не обязательно лидер) решает покинуть игру RPS,
+    но не выходит из лобби. Просто останавливаем RPS (game=None).
+    Второй игрок при пульлинге увидит 'no_game'.
+    """
+    user = request.user
+    code = request.data.get('code', '')
 
-    # Check collisions
-    if new_head in snake or not (0 <= new_head[0] < 20 and 0 <= new_head[1] < 20) or len(snake) == 0:
-        return Response({"snake": [], "food": data['food'], "message": "Game over"})  # Game over
+    if code not in lobbies:
+        return Response({'detail': 'Лобби не найдено.'}, status=404)
 
-    # Move snake
-    new_snake = [new_head] + snake[:-1]
+    lobby = lobbies[code]
+    # Проверим, что вообще была игра RPS
+    if lobby.get('game') != 'rps':
+        return Response({'detail': 'Игра RPS не запущена.'}, status=400)
 
-    # Check if food eaten
-    if new_head == food:
-        new_snake.append(snake[-1])
-        food = (random.randint(0, 19), random.randint(0, 19))
+    # Пользователь остаётся в лобби, но RPS больше нет
+    lobby['game'] = None
+    # Очистим временные данные RPS
+    lobby.pop('rpsMoves', None)
+    lobby.pop('rpsLastRound', None)
 
-    # Convert positions back to grid indices
-    snake_indices = [pos[1] * 20 + pos[0] for pos in new_snake]
-    food_index = food[1] * 20 + food[0]
-
-    return Response({"snake": snake_indices, "food": food_index})
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def tetris_start(request):
-    global scope_tetris
-    scope_tetris = 0
-
-    return Response({"scope": scope_tetris})
-
-
-@api_view(['Post'])
-@permission_classes([IsAuthenticated])
-def tetris_state(request):
-    global scope_tetris
-    data = request.data
-    message = ''
-    incorrect = False
-
-    active_piece = {
-        "shape": data.get('shape'),
-        "cells": [(pos % WIDTH, pos // WIDTH) for pos in data.get('cells', [])],
-        "rotation": data.get('rotation', 0)
-    }
-    block_cells = [(pos % WIDTH, pos // WIDTH) for pos in data.get('blockCells', [])]
-
-    # Move active piece down
-    new_active_cells = move_piece(active_piece['cells'], "down")
-
-    # Check collision with blocks or bottom
-    if not is_valid_position(new_active_cells, block_cells) or len(active_piece['cells']) == 0:
-        block_cells.extend(active_piece['cells'])
-        new_active_piece = spawn_piece()
-        scope_tetris += 1
-    else:
-
-        active_piece['cells'] = new_active_cells
-        new_active_piece = active_piece
-
-    # Check completed lines
-    rows = {y for _, y in block_cells}
-    completed_rows = {y for y in rows if sum(1 for x, y2 in block_cells if y2 == y) == WIDTH}
-    block_cells = [(x, y) for x, y in block_cells if y not in completed_rows]
-
-    scope_tetris += 100 * len(completed_rows)
-    new_block_cells = []
-    for x, y in block_cells:
-        new_y = y
-        for y2 in completed_rows:
-            if y <= y2:
-                new_y += 1
-        new_block_cells.append((x, new_y))
-
-    if sum(1 for x, y in new_block_cells if y == 0) > 0:
-        message = "Game over"
-        incorrect = True
-    # Convert back to grid indices
-    active_indices = [y * WIDTH + x for x, y in new_active_piece['cells']]
-    block_indices = [y * WIDTH + x for x, y in new_block_cells]
-
-    return Response({"shape": new_active_piece['shape'], "cells": active_indices,
-                     "rotation": new_active_piece['rotation'], "blockCells": block_indices, 'message': message,
-                     'incorrect': incorrect, "scope": scope_tetris})
-
-
-@api_view(['Post'])
-@permission_classes([IsAuthenticated])
-def tetris_action(request):
-    data = request.data
-    action = data.get("action")
-    message = ''
-    incorrect = False
-
-    active_piece = {
-        "shape": data.get('shape'),
-        "cells": [(pos % WIDTH, pos // WIDTH) for pos in data.get('cells', [])],
-        "rotation": data.get('rotation', 0)
-    }
-    block_cells = [(pos % WIDTH, pos // WIDTH) for pos in data.get('blockCells', [])]
-
-    if action == "left":
-        new_cells = move_piece(active_piece['cells'], "left")
-        if is_valid_position(new_cells, block_cells):
-            active_piece['cells'] = new_cells
-    elif action == "right":
-        new_cells = move_piece(active_piece['cells'], "right")
-        if is_valid_position(new_cells, block_cells):
-            active_piece['cells'] = new_cells
-    elif action == "down":
-        new_cells = move_piece(active_piece['cells'], "down")
-        if is_valid_position(new_cells, block_cells):
-            active_piece['cells'] = new_cells
-    elif action == "rotate":
-        rotated_piece = rotate_piece(active_piece)
-        if is_valid_position(rotated_piece['cells'], block_cells):
-            active_piece = rotated_piece
-
-    if sum(1 for x, y in block_cells if y == 0) > 0:
-        message = "Game over"
-        incorrect = True
-
-    # Convert back to grid indices
-    active_indices = [y * WIDTH + x for x, y in active_piece['cells']]
-    return Response({"shape": active_piece['shape'], "cells": active_indices,
-                     "rotation": active_piece['rotation'], 'message': message, 'incorrect': incorrect})
+    return Response({'detail': 'Игра RPS остановлена, вы всё ещё в лобби.'})
